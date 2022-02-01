@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "react": "17.0.2",
-    "react-native": "0.67.1"
+    "react-native": "0.67.1",
+    "react-native-android-location-enabler": "^1.2.2",
+    "styled-components": "^5.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.16.12",
