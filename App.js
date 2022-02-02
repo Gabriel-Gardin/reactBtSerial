@@ -12,43 +12,44 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  NativeEventEmitter,
   } from 'react-native';
 //import { computeWindowedRenderLimits } from 'react-native/Libraries/Lists/VirtualizeUtils';
 
 
-function bluetoothStateListener(){
-  BluetoothModule.addListener('BluetoothState', data => {
-    console.log("Bt event:", data.state);
-    switch (data.state) {
+// function bluetoothStateListener(){
+//   BluetoothModule.addListener('BluetoothState', data => {
+//     console.log("Bt event:", data.state);
+//     switch (data.state) {
 
-      case BluetoothStateEnum.BLUETOOTH_ON:
-        setBluetoothEnabled(true);
-        console.log("Bluetooth habilitado");
-        break;
+//       case BluetoothStateEnum.BLUETOOTH_ON:
+//         setBluetoothEnabled(true);
+//         console.log("Bluetooth habilitado");
+//         break;
 
-      case BluetoothStateEnum.BLUETOOTH_OFF:
-        console.log("Bluetooth desabilitado");
-        setBluetoothEnabled(false);
-        break;
+//       case BluetoothStateEnum.BLUETOOTH_OFF:
+//         console.log("Bluetooth desabilitado");
+//         setBluetoothEnabled(false);
+//         break;
 
-      case BluetoothStateEnum.BLUETOOTH_CONNECTED:
-        console.log("Bluetooth conectado");
-        this.setState({btConnected: true});
+//       case BluetoothStateEnum.BLUETOOTH_CONNECTED:
+//         console.log("Bluetooth conectado");
+//         this.setState({btConnected: true});
         
-        //Alert.alert("FMB", "CONECTADO");
-        break;
+//         //Alert.alert("FMB", "CONECTADO");
+//         break;
 
-      case BluetoothStateEnum.BLUETOOTH_DISCONNECTED:
-        console.log("Bluetooth desconectado");
-        this.setState({btConnected: false});
-        //Alert.alert("FMB", "DESCONECTADO");
-        break;
+//       case BluetoothStateEnum.BLUETOOTH_DISCONNECTED:
+//         console.log("Bluetooth desconectado");
+//         this.setState({btConnected: false});
+//         //Alert.alert("FMB", "DESCONECTADO");
+//         break;
 
-      default:
-        break;
-    }
-  });
-};
+//       default:
+//         break;
+//     }
+//   });
+// };
 
 
 
@@ -61,6 +62,7 @@ class App extends Component{
       bondedDevices: [],
       isLoading: false,
       btConnected: false,
+      btOn: false,
     };
     
     this.sendCommand = this.sendCommand.bind(this);
@@ -82,33 +84,96 @@ class App extends Component{
 
     BluetoothModule.askToEnableBluetooth();
     BluetoothModule.initBluetoothStateListener();
-    bluetoothStateListener();
+    // bluetoothStateListener();
+
+    const eventEmitter = new NativeEventEmitter(BluetoothModule);
+    this.eventListener = eventEmitter.addListener('BluetoothState', (event) => {
+      console.log(event.state);
+      switch (event.state) {
+        case 0:  //BT off
+          console.log("Bluetooth desligado");
+          //setBluetoothEnabled(false);
+          this.setState({btOn: false});
+          break;
+
+        case 1: //BT ON
+          //setBluetoothEnabled(true);
+          console.log("Bluetooth ligado");
+          break;
+
+        case 2:  //BT Desconectado
+          console.log("Bluetooth desconectado");
+          this.setState({btConnected: false});
+          //Alert.alert("FMB", "DESCONECTADO");
+          break;
+
+        case 3:  //BT Conectado
+          console.log("Bluetooth conectado");
+          this.setState({btConnected: true});
+          this.setState({textoFrase: "Digite seu comando"});
+          
+          //Alert.alert("FMB", "CONECTADO");
+          break;
+
+        case 4:  //BT Conectado
+          console.log("Bluetooth Turning On");
+          //this.setState({btConnected: true});
+          
+          //Alert.alert("FMB", "CONECTADO");
+          break;
+
+        case 5:  //BT Co
+          console.log("Bluetooth Turnin Off");
+          //this.setState({btConnected: true});
+          
+          //Alert.alert("FMB", "CONECTADO");
+          break;
+
+        default:
+          break;
+      }
+       //console.log(event.state) // "someValue"
+    });
 
     const bondedDevices = await BluetoothModule.getBondedDevices();
-    this.setState({bondedDevices: bondedDevices})
-    this.setState({btConnected: await BluetoothModule.get_bt_status()})
-
+    this.setState({bondedDevices: bondedDevices});
+    this.setState({btConnected: await BluetoothModule.get_bt_status()});
+    this.setState({btOn: await BluetoothModule.isBluetoothEnabled()});
   }
+
+   componentWillUnmount() {
+     this.eventListener.remove(); //Removes the listener
+   }
 
   async connectBt(btDevice){
-    this.setState({textoFrase: "Conectando..."});
-    this.setState({isLoading: true});
-    const granted = await functions.askPermissions();
-  
-    if (!granted) {
-      Toast.show({
-        type: 'info',
-        text1: 'Bluetooth',
-        text2:
-          'Para encontrarmos os dispositivos próximos precisamos do acesso a sua localização.',
-      });
+    if(this.state.btOn)
+    {
+      this.setState({textoFrase: "Conectando..."});
+      this.setState({isLoading: true});
+      const granted = await functions.askPermissions();
+    
+      if (!granted) {
+        Toast.show({
+          type: 'info',
+          text1: 'Bluetooth',
+          text2:
+            'Para encontrarmos os dispositivos próximos precisamos do acesso a sua localização.',
+        });
+      }
+    
+      BluetoothModule.connect(btDevice.address);
+      this.setState({isLoading: false});
+      if(!this.state.btConnected){
+        //Alert.alert("Não foi possível conectar")
+        this.setState({textoFrase: "Selecione um dispositivo..."});
+      }
     }
-  
-    BluetoothModule.connect(btDevice.address);
-    this.setState({isLoading: false});
-    this.setState({textoFrase: "Digite seu comando"});
-    this.setState({btConnected: true});
-  }
+    else
+    {
+      this.setState({textoFrase: "Tente novamente..."});
+      BluetoothModule.askToEnableBluetooth();
+    }
+    }
 
   sendCommand(){
     //Alert.alert("Enviando comando");

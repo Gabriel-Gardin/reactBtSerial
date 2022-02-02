@@ -58,7 +58,7 @@ public class Connection extends Thread{
         return this.mmDevice;
     }
 
-    public void run() {
+    public void run(){
         this.bluetoothAdapter.cancelDiscovery();
 
         try {
@@ -76,42 +76,49 @@ public class Connection extends Thread{
 
         this.connected = true;
         WritableMap payload = Arguments.createMap();
-        payload.putInt("state", 5); //CONNECTED;
+        payload.putInt("state", 3); //CONNECTED;
+        //this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState", payload);
         this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState", payload);
 
-/*
-        try {
-            byte[] buffer = new byte[1024];
-            int len;
-            //noinspection InfiniteLoopStatement
-            while (true) {
-                len = this.mmSocket.getInputStream().read(buffer);
+
+        
+        byte[] buffer = new byte[1024];
+        int len;
+        //noinspection InfiniteLoopStatement
+        while (true) {
+            WritableMap payload2 = Arguments.createMap();
+            try {
+                payload2.putInt("state", 7); //teste;
+                len = this.mmSocket.getInputStream().read(buffer); //AQUI ESTÁ TRAVANDO!!! PQ?!?!??!?
+                //Thread.currentThread().sleep(200); // Pause a thread por 200ms
+                payload2.putInt("state", len); //DISCONNECTED;
+                this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState", payload2);
 
                 
                 //byte[] data = Arrays.copyOf(buffer, len);
                 //if(listener != null)
-                  //  listener.onSerialRead(data);
+                    //  listener.onSerialRead(data);
+            }
+
+            catch (Exception e) {
+                //WritableMap payload = Arguments.createMap();
+                payload.putInt("state", 2); //DISCONNECTED;
+                this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState", payload2);
+                this.connected = false;
+                try {
+                    this.mmSocket.close();
+                } catch (Exception ignored) {
+                }
+                this.mmSocket = null;
             }
         } 
-        catch (Exception e) {
-
-            //WritableMap payload = Arguments.createMap();
-            payload.putInt("state", 6); //DISCONNECTED;
-            this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState", payload);
-            this.connected = false;
-            try {
-                this.mmSocket.close();
-            } catch (Exception ignored) {
-            }
-            this.mmSocket = null;
-        }*/
     }
 
     // Closes the client socket and causes the thread to finish.
     public void cancel() {
         try {
             WritableMap payload = Arguments.createMap();
-            payload.putInt("state", 6); //DISCONNECTED;
+            payload.putInt("state", 2); //DISCONNECTED;
             this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState", payload);
             this.connected = false;
             this.mmSocket.close();
