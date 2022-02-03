@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import com.reactbtserial.bluetooth.BluetoothStateEnum;
 //import com.driver3sat.bluetooth.Commands;
 //import com.driver3sat.bluetooth.Communication;
-import com.reactbtserial.bluetooth.Connection;
+import com.reactbtserial.bluetooth.ConnectThread;
 //import com.driver3sat.bluetooth.Discovery;
 import com.reactbtserial.bluetooth.NativeDevice;
 //import com.driver3sat.bluetooth.Pairing;
@@ -53,7 +53,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     private static final int BT_PERMISSION = 1;
 
     private BluetoothAdapter bluetoothAdapter;
-    private Connection connection;
+    private ConnectThread connection;
     // private Communication communication;
     private ReactContext reactContext;
     // private DataReceiver dataReceiver;
@@ -173,7 +173,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         BluetoothDevice device = this.bluetoothAdapter.getRemoteDevice(address);
         NativeDevice nativeDevice = new NativeDevice(device);
 
-        Connection connection = new Connection(
+        ConnectThread connection = new ConnectThread(
                 device,
                 this.bluetoothAdapter,
                 this.reactContext);
@@ -199,19 +199,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void close_bt_connection() {
         if (this.connection.connected == true) {
-
-            // this.connection.thread_running = false;
-            this.connection.stop_thread();
-            try {
-                Thread.currentThread().sleep(1000); // Pause a thread por 200ms
-                this.connection.cancel();
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
-            }
-            // this.connection.interrupt();
-            // this.connection.interrupt();
-            // this.connection.cancel();
-            // this.connection.stop();
+            this.connection.cancel();
         }
     }
 
