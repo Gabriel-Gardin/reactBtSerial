@@ -132,9 +132,9 @@ class App extends Component{
         case 7:  //BT Co
           console.log("Conexão interrompida");
           this.setState({btConnected: false});
-          Alert.alert("Conexão interrompida, certifique-se que o equipamento está ligado");
+          Alert.alert("Conexão interrompida!");
           this.setState({textoFrase: "Selecione um dispositivo..."});
-          BluetoothModule.close_bt_connection();
+          //BluetoothModule.close_bt_connection();
           
           //Alert.alert("FMB", "CONECTADO");
           break;

@@ -184,7 +184,8 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         // CommunicationThread(connection.getMmSocket());
         connection.run();
         mmSocket = connection.getMmSocket();
-        CommunicationThread communication = new CommunicationThread(mmSocket, this.reactContext);
+        CommunicationThread communication = new CommunicationThread(mmSocket,
+                this.reactContext);
         communication.start();
 
         Log.e(TAG, "Communication iniciada");
@@ -204,8 +205,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Thread.currentThread().interrupt();
             }
         }
-        this.connection.cancel();
-        this.communication.cancel();
+        communication.cancel();
     }
 
     @ReactMethod
