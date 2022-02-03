@@ -59,26 +59,20 @@ public class CommunicationThread extends Thread {
                 // Read from the InputStream
                 bytes = mmInStream.read(buffer); // Le os dados que chegam
 
-                // WritableMap payload = Arguments.createMap();
-                // payload.putInt("state", bytes); // CONNECTED;
-                // this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-                // "BluetoothState",
-                // payload);
-
                 Log.i(TAG, String.format("Dados: %s", Arrays.toString(buffer)));
                 Log.i(TAG, String.format("Tamando: %d", bytes));
                 // Log.e(TAG, "Tamanho: %i", bytes);
                 // TODO: Transferir os dados para o JS;
 
             } catch (IOException e) {
-                Log.e(TAG, "disconnected", e);
-                WritableMap payload = Arguments.createMap();
-                payload.putInt("state", 2); // DISCONNECTED;
-                this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-                        "BluetoothState",
-                        payload);
-                // TODO: Notificar que a conexão caiu
-                // connectionLost();
+                if (this.mState) {
+                    WritableMap payload = Arguments.createMap();
+                    payload.putInt("state", 7); // Conexão perdida;
+                    this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
+                            "BluetoothState",
+                            payload);
+                }
+                Log.e(TAG, "Conexão bluetooth caiu!!", e);
                 break;
             }
         }

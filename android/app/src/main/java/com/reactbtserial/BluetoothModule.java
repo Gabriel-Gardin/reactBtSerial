@@ -211,8 +211,13 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void close_bt_connection() {
         if (this.connection.connected == true) {
-            this.connection.cancel();
             this.communication.cancel();
+            try {
+                Thread.currentThread().sleep(200); // Pause a thread por 200ms
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+            }
+            this.connection.cancel();
         }
     }
 
