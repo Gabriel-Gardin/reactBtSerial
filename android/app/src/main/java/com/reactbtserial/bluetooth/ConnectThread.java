@@ -17,8 +17,14 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import java.io.IOException;
 import java.util.UUID;
 
+/**
+ * This thread runs while attempting to make an outgoing connection
+ * with a device. It runs straight through; the connection either
+ * succeeds or fails.
+ */
+
 public class ConnectThread extends Thread {
-    private static final String TAG = "MY_APP_DEBUG_TAG";
+    private static final String TAG = "ConnectThreadModule";
     private final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothSocket mmSocket;
     private BluetoothDevice mmDevice;
@@ -89,7 +95,7 @@ public class ConnectThread extends Thread {
             this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState",
                     payload);
             this.connected = false;
-            this.mmSocket.close();
+            this.mmSocket.close(); // Bluetooth socket
         } catch (Exception e) {
             // Log.e(TAG, "Could not close the client socket", e);
         }

@@ -15,6 +15,7 @@ import com.reactbtserial.bluetooth.BluetoothStateEnum;
 //import com.driver3sat.bluetooth.Commands;
 //import com.driver3sat.bluetooth.Communication;
 import com.reactbtserial.bluetooth.ConnectThread;
+import com.reactbtserial.bluetooth.CommunicationThread;
 //import com.driver3sat.bluetooth.Discovery;
 import com.reactbtserial.bluetooth.NativeDevice;
 //import com.driver3sat.bluetooth.Pairing;
@@ -54,6 +55,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
 
     private BluetoothAdapter bluetoothAdapter;
     private ConnectThread connection;
+    private CommunicationThread communication;
     // private Communication communication;
     private ReactContext reactContext;
     // private DataReceiver dataReceiver;
@@ -171,13 +173,21 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     public void connect(String address) throws IOException {
 
         BluetoothDevice device = this.bluetoothAdapter.getRemoteDevice(address);
+        BluetoothSocket mmSocket;
         NativeDevice nativeDevice = new NativeDevice(device);
-
         ConnectThread connection = new ConnectThread(
                 device,
                 this.bluetoothAdapter,
                 this.reactContext);
+
+        // CommunicationThread communication = new
+        // CommunicationThread(connection.getMmSocket());
         connection.run();
+        mmSocket = connection.getMmSocket();
+        CommunicationThread communication = new CommunicationThread(mmSocket, this.reactContext);
+        communication.start();
+
+        Log.e(TAG, "Communication iniciada");
 
         int i = 0;
         while (i < 15) {
@@ -186,6 +196,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Thread.currentThread().sleep(200); // Pause a thread por 200ms
                 if (connection.connected) {
                     this.connection = connection;
+                    this.communication = communication;
                     // promise.resolve(true);
                     return;
                 }
@@ -193,13 +204,15 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Thread.currentThread().interrupt();
             }
         }
-        // promise.resolve(false);*/
+        this.connection.cancel();
+        this.communication.cancel();
     }
 
     @ReactMethod
     public void close_bt_connection() {
         if (this.connection.connected == true) {
             this.connection.cancel();
+            this.communication.cancel();
         }
     }
 
