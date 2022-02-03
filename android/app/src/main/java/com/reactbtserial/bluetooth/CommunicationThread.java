@@ -58,7 +58,6 @@ public class CommunicationThread extends Thread {
             try {
                 // Read from the InputStream
                 bytes = mmInStream.read(buffer); // Le os dados que chegam
-
                 Log.i(TAG, String.format("Dados: %s", Arrays.toString(buffer)));
                 Log.i(TAG, String.format("Tamando: %d", bytes));
                 // Log.e(TAG, "Tamanho: %i", bytes);

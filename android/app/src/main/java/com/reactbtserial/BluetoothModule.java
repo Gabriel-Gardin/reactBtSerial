@@ -56,15 +56,12 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     private BluetoothAdapter bluetoothAdapter;
     private ConnectThread connection;
     private CommunicationThread communication;
-    // private Communication communication;
     private ReactContext reactContext;
-    // private DataReceiver dataReceiver;
     private BluetoothState bluetoothStateReciver;
-    // private BroadcastReceiver mDiscoveryReceiver;
+    private BluetoothSocket mmSocket;
 
     public BluetoothModule(@Nonnull ReactApplicationContext reactContext) {
         super(reactContext);
-
         this.reactContext = reactContext;
     }
 
@@ -102,19 +99,13 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void initBluetoothStateListener() {
         this.bluetoothStateReciver = new BluetoothState();
-
         IntentFilter bluetoothStateFilter = new IntentFilter();
-
         bluetoothStateFilter.addAction(this.bluetoothAdapter.ACTION_STATE_CHANGED);
         bluetoothStateFilter.addAction(this.bluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
 
         getReactApplicationContext().registerReceiver(
                 bluetoothStateReciver,
                 bluetoothStateFilter);
-    }
-
-    public void send(int number) {
-        Log.d(TAG, String.valueOf(number));
     }
 
     @ReactMethod
@@ -173,7 +164,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     public void connect(String address) throws IOException {
 
         BluetoothDevice device = this.bluetoothAdapter.getRemoteDevice(address);
-        BluetoothSocket mmSocket;
         NativeDevice nativeDevice = new NativeDevice(device);
         ConnectThread connection = new ConnectThread(
                 device,
@@ -183,10 +173,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         // CommunicationThread communication = new
         // CommunicationThread(connection.getMmSocket());
         connection.run();
-        mmSocket = connection.getMmSocket();
-        CommunicationThread communication = new CommunicationThread(mmSocket,
-                this.reactContext);
-        communication.start();
 
         Log.e(TAG, "Communication iniciada");
 
@@ -197,6 +183,10 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Thread.currentThread().sleep(200); // Pause a thread por 200ms
                 if (connection.connected) {
                     this.connection = connection;
+                    this.mmSocket = this.connection.getMmSocket();
+                    CommunicationThread communication = new CommunicationThread(this.mmSocket,
+                            this.reactContext);
+                    communication.start();
                     this.communication = communication;
                     // promise.resolve(true);
                     return;
