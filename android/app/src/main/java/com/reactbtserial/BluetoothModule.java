@@ -429,13 +429,13 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                         sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
                         break;
 
-                    case BluetoothAdapter.STATE_CONNECTED:
-                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
-                        break;
+                    // case BluetoothAdapter.STATE_CONNECTED:
+                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
+                    // break;
 
-                    case BluetoothAdapter.STATE_DISCONNECTED:
-                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
-                        break;
+                    // case BluetoothAdapter.STATE_DISCONNECTED:
+                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
+                    // break;
                     // case BluetoothAdapter.STATE_TURNING_ON:
                     // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
                     // break;

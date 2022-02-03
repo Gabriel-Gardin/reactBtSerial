@@ -49,7 +49,6 @@ public class ConnectThread extends Thread {
         }
         this.mmSocket = tmp; // Abriu o socket
         // TODO: Notificar que o processo de conexão começou
-
         this.bluetoothAdapter = bluetoothAdapter;
     }
 
