@@ -56,7 +56,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     private Connection connection;
     // private Communication communication;
     private ReactContext reactContext;
-    //private DataReceiver dataReceiver;
+    // private DataReceiver dataReceiver;
     private BluetoothState bluetoothStateReciver;
     // private BroadcastReceiver mDiscoveryReceiver;
 
@@ -91,9 +91,9 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         }
     }
 
-
     /**
-     * Inicializa o 
+     * Inicializa o
+     * 
      * @param x The value to square.
      * @return The square root of the given number.
      */
@@ -177,7 +177,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 device,
                 this.bluetoothAdapter,
                 this.reactContext);
-        connection.start();
+        connection.run();
 
         int i = 0;
         while (i < 15) {
@@ -199,8 +199,8 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void close_bt_connection() {
         if (this.connection.connected == true) {
-            
-            //this.connection.thread_running = false;
+
+            // this.connection.thread_running = false;
             this.connection.stop_thread();
             try {
                 Thread.currentThread().sleep(1000); // Pause a thread por 200ms
@@ -208,10 +208,10 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
             }
-            //this.connection.interrupt();
-            //this.connection.interrupt();
-            //this.connection.cancel();
-            //this.connection.stop();
+            // this.connection.interrupt();
+            // this.connection.interrupt();
+            // this.connection.cancel();
+            // this.connection.stop();
         }
     }
 
@@ -225,39 +225,39 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         }
     }
 
-
     // @ReactMethod
-    // public void addListener(String eventName, Promise promise) throws IOException {
-    //     try {unblockFilterFilter();
+    // public void addListener(String eventName, Promise promise) throws IOException
+    // {
+    // try {unblockFilterFilter();
 
-    //         unblockFilter.addAction(Events.UNBLOCK_COMMAND_NOT_EXECUTED);
-    //         unblockFilter.addAction(Events.UNBLOCK_COMMAND_EXECUTED);
-    //         unblockFilter.addAction(Events.CONNECTION_ERROR);
-    //         unblockFilter.addAction(Events.IGNITION_ON);
-    //         unblockFilter.addAction(Events.IGNITION_OFF);
-    //         unblockFilter.addAction(Events.COMMAND_NOT_SENT);
-    //         unblockFilter.addAction(Events.COMMAND_SENT);
-    //         unblockFilter.addAction(Events.CONNECTION_CLOSED);
+    // unblockFilter.addAction(Events.UNBLOCK_COMMAND_NOT_EXECUTED);
+    // unblockFilter.addAction(Events.UNBLOCK_COMMAND_EXECUTED);
+    // unblockFilter.addAction(Events.CONNECTION_ERROR);
+    // unblockFilter.addAction(Events.IGNITION_ON);
+    // unblockFilter.addAction(Events.IGNITION_OFF);
+    // unblockFilter.addAction(Events.COMMAND_NOT_SENT);
+    // unblockFilter.addAction(Events.COMMAND_SENT);
+    // unblockFilter.addAction(Events.CONNECTION_CLOSED);
 
-    //         getReactApplicationContext().registerReceiver(
-    //                 this.dataReceiver,
-    //                 unblockFilter);
+    // getReactApplicationContext().registerReceiver(
+    // this.dataReceiver,
+    // unblockFilter);
 
-    //         promise.resolve(true);
-    //     } catch (Exception ex) {
-    //         promise.resolve(false);
-    //     }
+    // promise.resolve(true);
+    // } catch (Exception ex) {
+    // promise.resolve(false);
+    // }
     // }
 
     // @ReactMethod
     // public void removeListener() throws IOException {
-    //     try {
-    //         if (this.dataReceiver != null) {
-    //             getReactApplicationContext().unregisterReceiver(this.dataReceiver);
-    //             this.dataReceiver = null;
-    //         }
-    //     } catch (Exception ex) {
-    //     }
+    // try {
+    // if (this.dataReceiver != null) {
+    // getReactApplicationContext().unregisterReceiver(this.dataReceiver);
+    // this.dataReceiver = null;
+    // }
+    // } catch (Exception ex) {
+    // }
     // }
 
     /*
@@ -381,11 +381,11 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
      */
 
     // public void sendEvent(WritableMap data) {
-    //     ReactContext reactContext = getReactApplicationContext();
+    // ReactContext reactContext = getReactApplicationContext();
 
-    //     reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-    //             DATA_RECEIVE_EVENT,
-    //             data);
+    // reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
+    // DATA_RECEIVE_EVENT,
+    // data);
     // }
 
     public void sendBluetoothState(BluetoothStateEnum state) {
@@ -417,8 +417,8 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                         sendBluetoothState(BluetoothStateEnum.BLUETOOTH_OFF);
                         break;
                     // case BluetoothAdapter.STATE_TURNING_OFF:
-                    //     sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
-                    //     break;
+                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
+                    // break;
                     case BluetoothAdapter.STATE_ON:
                         sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
                         break;
@@ -431,55 +431,55 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                         sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
                         break;
                     // case BluetoothAdapter.STATE_TURNING_ON:
-                    //     sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
-                    //     break;
+                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
+                    // break;
                 }
             }
-            
+
             // if(action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CONNECTED)){
-            //     sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
+            // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
             // }
         }
     }
 
     // private final class DataReceiver extends BroadcastReceiver {
 
-    //     @Override
-    //     public void onReceive(Context context, Intent intent) {
-    //         String action = intent.getAction();
+    // @Override
+    // public void onReceive(Context context, Intent intent) {
+    // String action = intent.getAction();
 
-    //         WritableMap params = Arguments.createMap();
+    // WritableMap params = Arguments.createMap();
 
-    //         switch (action) {
-    //             case Events.UNBLOCK_COMMAND_EXECUTED:
-    //                 params.putInt("event", EventsEnum.UNBLOCK_COMMAND_EXECUTED.getEventsCode());
-    //                 break;
-    //             case Events.UNBLOCK_COMMAND_NOT_EXECUTED:
-    //                 params.putInt("event",
-    //                         EventsEnum.UNBLOCK_COMMAND_NOT_EXECUTED.getEventsCode());
-    //                 break;
-    //             case Events.CONNECTION_CLOSED:
-    //                 params.putInt("event", EventsEnum.CONNECTION_CLOSED.getEventsCode());
-    //                 break;
-    //             case Events.CONNECTION_ERROR:
-    //                 params.putInt("event", EventsEnum.CONNECTION_ERROR.getEventsCode());
-    //                 break;
-    //             case Events.IGNITION_ON:
-    //                 params.putInt("event", EventsEnum.IGNITION_ON.getEventsCode());
-    //                 break;
-    //             case Events.IGNITION_OFF:
-    //                 params.putInt("event", EventsEnum.IGNITION_OFF.getEventsCode());
-    //                 break;
-    //             case Events.COMMAND_SENT:
-    //                 params.putInt("event", EventsEnum.COMMAND_SENT.getEventsCode());
-    //                 break;
-    //             case Events.COMMAND_NOT_SENT:
-    //                 params.putInt("event", EventsEnum.COMMAND_NOT_SENT.getEventsCode());
-    //                 break;
-    //         }
+    // switch (action) {
+    // case Events.UNBLOCK_COMMAND_EXECUTED:
+    // params.putInt("event", EventsEnum.UNBLOCK_COMMAND_EXECUTED.getEventsCode());
+    // break;
+    // case Events.UNBLOCK_COMMAND_NOT_EXECUTED:
+    // params.putInt("event",
+    // EventsEnum.UNBLOCK_COMMAND_NOT_EXECUTED.getEventsCode());
+    // break;
+    // case Events.CONNECTION_CLOSED:
+    // params.putInt("event", EventsEnum.CONNECTION_CLOSED.getEventsCode());
+    // break;
+    // case Events.CONNECTION_ERROR:
+    // params.putInt("event", EventsEnum.CONNECTION_ERROR.getEventsCode());
+    // break;
+    // case Events.IGNITION_ON:
+    // params.putInt("event", EventsEnum.IGNITION_ON.getEventsCode());
+    // break;
+    // case Events.IGNITION_OFF:
+    // params.putInt("event", EventsEnum.IGNITION_OFF.getEventsCode());
+    // break;
+    // case Events.COMMAND_SENT:
+    // params.putInt("event", EventsEnum.COMMAND_SENT.getEventsCode());
+    // break;
+    // case Events.COMMAND_NOT_SENT:
+    // params.putInt("event", EventsEnum.COMMAND_NOT_SENT.getEventsCode());
+    // break;
+    // }
 
-    //         sendEvent(params);
-    //     }
+    // sendEvent(params);
+    // }
     // }
 
 }
