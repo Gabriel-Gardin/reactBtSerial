@@ -57,9 +57,18 @@ public class CommunicationThread extends Thread {
         while (this.mState) {
             try {
                 // Read from the InputStream
+                Arrays.fill(buffer, (byte) 0);
                 bytes = mmInStream.read(buffer); // Le os dados que chegam
                 Log.i(TAG, String.format("Dados: %s", Arrays.toString(buffer)));
                 Log.i(TAG, String.format("Tamando: %d", bytes));
+
+                WritableMap payload = Arguments.createMap();
+                payload.putInt("state", 10); // Dados bluetooth;
+                payload.putString("dados", Arrays.toString(buffer));
+                this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
+                        "BluetoothState",
+                        payload);
+
                 // Log.e(TAG, "Tamanho: %i", bytes);
                 // TODO: Transferir os dados para o JS;
 

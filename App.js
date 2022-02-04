@@ -14,44 +14,6 @@ import {
   Alert,
   NativeEventEmitter,
   } from 'react-native';
-//import { computeWindowedRenderLimits } from 'react-native/Libraries/Lists/VirtualizeUtils';
-
-
-// function bluetoothStateListener(){
-//   BluetoothModule.addListener('BluetoothState', data => {
-//     console.log("Bt event:", data.state);
-//     switch (data.state) {
-
-//       case BluetoothStateEnum.BLUETOOTH_ON:
-//         setBluetoothEnabled(true);
-//         console.log("Bluetooth habilitado");
-//         break;
-
-//       case BluetoothStateEnum.BLUETOOTH_OFF:
-//         console.log("Bluetooth desabilitado");
-//         setBluetoothEnabled(false);
-//         break;
-
-//       case BluetoothStateEnum.BLUETOOTH_CONNECTED:
-//         console.log("Bluetooth conectado");
-//         this.setState({btConnected: true});
-        
-//         //Alert.alert("FMB", "CONECTADO");
-//         break;
-
-//       case BluetoothStateEnum.BLUETOOTH_DISCONNECTED:
-//         console.log("Bluetooth desconectado");
-//         this.setState({btConnected: false});
-//         //Alert.alert("FMB", "DESCONECTADO");
-//         break;
-
-//       default:
-//         break;
-//     }
-//   });
-// };
-
-
 
 class App extends Component{
 
@@ -63,6 +25,7 @@ class App extends Component{
       isLoading: false,
       btConnected: false,
       btOn: false,
+      dadosBt: ''
     };
     
     this.sendCommand = this.sendCommand.bind(this);
@@ -87,6 +50,7 @@ class App extends Component{
     // bluetoothStateListener();
 
     const eventEmitter = new NativeEventEmitter(BluetoothModule);
+
     this.eventListener = eventEmitter.addListener('BluetoothState', (event) => {
       console.log(event.state);
       switch (event.state) {
@@ -138,6 +102,12 @@ class App extends Component{
           
           //Alert.alert("FMB", "CONECTADO");
           break;
+        
+        case 10: //Dados bluetooth
+          console.log("Dados: ", event.dados);
+          this.setState({dadosBt: event.dados});
+          break;
+
 
         default:
           break;
@@ -150,8 +120,8 @@ class App extends Component{
     this.setState({btConnected: await BluetoothModule.get_bt_status()});
     this.setState({btOn: await BluetoothModule.isBluetoothEnabled()});
   }
-
-   componentWillUnmount() {
+  
+   componentWillUnmount(){
      this.eventListener.remove(); //Removes the listener
    }
 
@@ -183,7 +153,7 @@ class App extends Component{
       this.setState({textoFrase: "Tente novamente..."});
       BluetoothModule.askToEnableBluetooth();
     }
-    }
+  }
 
   sendCommand(){
     //Alert.alert("Enviando comando");
@@ -214,44 +184,59 @@ class App extends Component{
     return(
       <View style={styles.container}>
 
+        <View style={{justifyContent: 'flex-end'}}>
         <Text style={styles.textoFrase}>{this.state.textoFrase}</Text>
+        </View>
 
         {this.state.isLoading &&  (
         <Loading></Loading>
       )}
 
-        <ScrollView>
-        {!this.state.isLoading &&  this.state.btConnected && (
-          <View>
-          <TextInput style={styles.input}
-          placeholder='Digite o comando'
-          onChangeText={this.pegaComando} />
-      
-          <TouchableOpacity style={styles.button} onPress={() => this.sendCommand()}>
-            <View style={styles.btnArea}>
-              <Text style={styles.btnTexto}>Enviar comando</Text>
+
+          {!this.state.isLoading &&  this.state.btConnected && (
+              <ScrollView
+              contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', flexDirection: 'column' }}
+              style={{ backgroundColor: 'white', paddingBottom: 30, padding: 20 }}
+            >
+                          <View>
+            <Text>{this.state.dadosBt}</Text>
             </View>
-          </TouchableOpacity>
+              <View>
+              <TextInput style={styles.input}
+              placeholder='Digite o comando'
+              onChangeText={this.pegaComando} />
+          
+              <View style={{flexDirection:"row"}}>
+                <TouchableOpacity style={styles.button} onPress={() => this.sendCommand()}>
+                  <View style={styles.btnArea}>
+                    <Text style={styles.btnTexto}>Enviar</Text>
+                  </View>
+                </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={() => this.desconectBt()}>
-            <View style={styles.btnArea}>
-              <Text style={styles.btnTexto}>Desconectar</Text>
-            </View>
-          </TouchableOpacity>
-          </View>
-      )}
+                <TouchableOpacity style={styles.button} onPress={() => this.desconectBt()}>
+                  <View style={styles.btnArea}>
+                    <Text style={styles.btnTexto}>Desconectar</Text>
+                  </View>
+                </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
+        )}
 
-        {!this.state.isLoading && !this.state.btConnected && this.state.bondedDevices.map((d, idx) => {
-          return (
-          <TouchableOpacity key={idx} style={styles.button} onPress={() => this.connectBt(d)}>
-            <View style={styles.btnArea}>
-              <Text style={styles.btnTexto}>{d.name}</Text>
-            </View>
-          </TouchableOpacity>)
-        })}
-        </ScrollView>
-
-
+        {!this.state.isLoading && !this.state.btConnected &&(
+          <ScrollView>
+         {this.state.bondedDevices.map((d, idx) => {
+            return (
+            <TouchableOpacity key={idx} style={styles.button_devices} onPress={() => this.connectBt(d)}>
+              <View style={styles.btnArea}>
+                <Text style={styles.btnTexto}>{d.name}</Text>
+              </View>
+            </TouchableOpacity>
+            )
+            
+          })}
+          </ScrollView>
+          )}
       </View>
     );
   }
@@ -272,8 +257,9 @@ const styles = StyleSheet.create({
     fontSize:20,
     color: '#dd7b22',
     margin: 30,
+    justifyContent: 'flex-start'
   },
-  button:{
+  button_devices:{
     width: 230,
     height: 50,
     borderWidth: 2,
@@ -281,6 +267,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     alignItems: 'center',
     marginTop: '2.5%',
+    padding: 10,
+    borderRadius: 7
+  },
+  button:{
+    width: 150,
+    height: 50,
+    borderWidth: 2,
+    borderColor: '#dd7b22',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    marginTop: '2.5%',
+    margin: '1%',
+    padding: 10,
     borderRadius: 7
   },
   btnArea:{
