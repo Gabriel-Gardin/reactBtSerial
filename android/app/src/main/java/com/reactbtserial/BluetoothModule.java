@@ -128,38 +128,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         promise.resolve(bonded);
     }
 
-    /*
-     * @ReactMethod
-     * public void pairDevice(String address, Promise promise) {
-     * if (BuildConfig.DEBUG)
-     * Log.d(TAG, String.format("Attempting to pair with device %s", address));
-     * 
-     * final Pairing pr = new Pairing(getReactApplicationContext(),
-     * new Pairing.PairingCallback() {
-     * 
-     * @Override
-     * public void onPairingSuccess(NativeDevice device) {
-     * promise.resolve(device.map());
-     * }
-     * 
-     * @Override
-     * public void onPairingFailure(Exception cause) {
-     * promise.reject(TAG, cause);
-     * }
-     * });
-     * getReactApplicationContext().registerReceiver(pr, Pairing.intentFilter());
-     * 
-     * try {
-     * BluetoothDevice device = this.bluetoothAdapter.getRemoteDevice(address);
-     * 
-     * Method m = device.getClass().getMethod("createBond", (Class[]) null);
-     * m.invoke(device, (Object[]) null);
-     * } catch (IllegalAccessException | NoSuchMethodException |
-     * InvocationTargetException e) {
-     * Log.d("3SAT", String.valueOf(e));
-     * }
-     * }
-     */
     @ReactMethod
     public void connect(String address) throws IOException {
 
@@ -170,9 +138,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 this.bluetoothAdapter,
                 this.reactContext);
 
-        // CommunicationThread communication = new
-        // CommunicationThread(connection.getMmSocket());
-        connection.run();
+        connection.run(); // Inicia a thread de conexão
 
         Log.e(TAG, "Communication iniciada");
 
@@ -186,7 +152,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                     this.mmSocket = this.connection.getMmSocket();
                     CommunicationThread communication = new CommunicationThread(this.mmSocket,
                             this.reactContext);
-                    communication.start();
+                    communication.start(); // Inicia a threa que recebe dados pelo socket bluetooth.
                     this.communication = communication;
                     // promise.resolve(true);
                     return;
@@ -195,7 +161,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Thread.currentThread().interrupt();
             }
         }
-        communication.cancel();
+        // communication.cancel();
     }
 
     @ReactMethod
@@ -218,6 +184,77 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
             return;
         } else {
             promise.resolve(this.connection.connected);
+        }
+    }
+
+    @ReactMethod
+    public void writeFmb(ReadableArray message, Promise promise) throws IOException {
+
+        final byte[] res;
+        res = new byte[message.size()];
+
+        for (int i = 0; i < message.size(); i++) {
+            res[i] = ((byte) message.getDouble(i));
+        }
+
+        OutputStream mmOutStream = this.connection.getMmSocket().getOutputStream();
+
+        try {
+            mmOutStream.write(res);
+            promise.resolve(true);
+        } catch (IOException e) {
+            promise.reject("400", "Failed");
+        }
+    }
+
+    @ReactMethod
+    public void writeStringCommand(String message, Promise promise) throws IOException {
+        OutputStream mmOutStream = this.connection.getMmSocket().getOutputStream();
+
+        try {
+            mmOutStream.write(message.getBytes());
+        } catch (IOException e) {
+            promise.reject("400", "Failed");
+        }
+    }
+
+    private boolean checkBluetoothAdapter() {
+        return (this.bluetoothAdapter != null && this.bluetoothAdapter.isEnabled());
+    }
+
+    private class BluetoothState extends BroadcastReceiver {
+
+        public void sendBluetoothState(BluetoothStateEnum state) {
+            ReactContext reactContext = getReactApplicationContext();
+            WritableMap params = Arguments.createMap();
+            params.putInt("state", state.getBluetoothTypeCode());
+            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
+                    BLUETOOTH_STATE,
+                    params);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                        BluetoothAdapter.ERROR);
+
+                switch (state) {
+                    case BluetoothAdapter.STATE_OFF:
+                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_OFF);
+                        break;
+                    // case BluetoothAdapter.STATE_TURNING_OFF:
+                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
+                    // break;
+                    case BluetoothAdapter.STATE_ON:
+                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
+                        break;
+
+                }
+            }
         }
     }
 
@@ -301,26 +338,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
      * }
      */
 
-    @ReactMethod
-    public void writeFmb(ReadableArray message, Promise promise) throws IOException {
-
-        final byte[] res;
-        res = new byte[message.size()];
-
-        for (int i = 0; i < message.size(); i++) {
-            res[i] = ((byte) message.getDouble(i));
-        }
-
-        OutputStream mmOutStream = this.connection.getMmSocket().getOutputStream();
-
-        try {
-            mmOutStream.write(res);
-            promise.resolve(true);
-        } catch (IOException e) {
-            promise.reject("400", "Failed");
-        }
-    }
-
     /*
      * @ReactMethod
      * public void startCommunication(Promise promise) {
@@ -384,98 +401,37 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     // data);
     // }
 
-    public void sendBluetoothState(BluetoothStateEnum state) {
-
-        ReactContext reactContext = getReactApplicationContext();
-        WritableMap params = Arguments.createMap();
-        params.putInt("state", state.getBluetoothTypeCode());
-        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-                BLUETOOTH_STATE,
-                params);
-    }
-
-    private boolean checkBluetoothAdapter() {
-        return (this.bluetoothAdapter != null && this.bluetoothAdapter.isEnabled());
-    }
-
-    private class BluetoothState extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR);
-
-                switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_OFF);
-                        break;
-                    // case BluetoothAdapter.STATE_TURNING_OFF:
-                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
-                    // break;
-                    case BluetoothAdapter.STATE_ON:
-                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
-                        break;
-
-                    // case BluetoothAdapter.STATE_CONNECTED:
-                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
-                    // break;
-
-                    // case BluetoothAdapter.STATE_DISCONNECTED:
-                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
-                    // break;
-                    // case BluetoothAdapter.STATE_TURNING_ON:
-                    // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
-                    // break;
-                }
-            }
-
-            // if(action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CONNECTED)){
-            // sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
-            // }
-        }
-    }
-
-    // private final class DataReceiver extends BroadcastReceiver {
-
-    // @Override
-    // public void onReceive(Context context, Intent intent) {
-    // String action = intent.getAction();
-
-    // WritableMap params = Arguments.createMap();
-
-    // switch (action) {
-    // case Events.UNBLOCK_COMMAND_EXECUTED:
-    // params.putInt("event", EventsEnum.UNBLOCK_COMMAND_EXECUTED.getEventsCode());
-    // break;
-    // case Events.UNBLOCK_COMMAND_NOT_EXECUTED:
-    // params.putInt("event",
-    // EventsEnum.UNBLOCK_COMMAND_NOT_EXECUTED.getEventsCode());
-    // break;
-    // case Events.CONNECTION_CLOSED:
-    // params.putInt("event", EventsEnum.CONNECTION_CLOSED.getEventsCode());
-    // break;
-    // case Events.CONNECTION_ERROR:
-    // params.putInt("event", EventsEnum.CONNECTION_ERROR.getEventsCode());
-    // break;
-    // case Events.IGNITION_ON:
-    // params.putInt("event", EventsEnum.IGNITION_ON.getEventsCode());
-    // break;
-    // case Events.IGNITION_OFF:
-    // params.putInt("event", EventsEnum.IGNITION_OFF.getEventsCode());
-    // break;
-    // case Events.COMMAND_SENT:
-    // params.putInt("event", EventsEnum.COMMAND_SENT.getEventsCode());
-    // break;
-    // case Events.COMMAND_NOT_SENT:
-    // params.putInt("event", EventsEnum.COMMAND_NOT_SENT.getEventsCode());
-    // break;
-    // }
-
-    // sendEvent(params);
-    // }
-    // }
+    /*
+     * @ReactMethod
+     * public void pairDevice(String address, Promise promise) {
+     * if (BuildConfig.DEBUG)
+     * Log.d(TAG, String.format("Attempting to pair with device %s", address));
+     * 
+     * final Pairing pr = new Pairing(getReactApplicationContext(),
+     * new Pairing.PairingCallback() {
+     * 
+     * @Override
+     * public void onPairingSuccess(NativeDevice device) {
+     * promise.resolve(device.map());
+     * }
+     * 
+     * @Override
+     * public void onPairingFailure(Exception cause) {
+     * promise.reject(TAG, cause);
+     * }
+     * });
+     * getReactApplicationContext().registerReceiver(pr, Pairing.intentFilter());
+     * 
+     * try {
+     * BluetoothDevice device = this.bluetoothAdapter.getRemoteDevice(address);
+     * 
+     * Method m = device.getClass().getMethod("createBond", (Class[]) null);
+     * m.invoke(device, (Object[]) null);
+     * } catch (IllegalAccessException | NoSuchMethodException |
+     * InvocationTargetException e) {
+     * Log.d("3SAT", String.valueOf(e));
+     * }
+     * }
+     */
 
 }
