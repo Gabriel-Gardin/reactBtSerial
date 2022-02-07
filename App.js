@@ -25,12 +25,16 @@ class App extends Component{
       isLoading: false,
       btConnected: false,
       btOn: false,
-      dadosBt: ''
+      dadosBt: '',
+      availableDevices: [],
+      scanReady: false
+
     };
     
     this.sendCommand = this.sendCommand.bind(this);
     this.connectBt = this.connectBt.bind(this);
     this.pegaComando = this.pegaComando.bind(this);
+    this.escanearBT = this.escanearBT.bind(this);
   }
 
   async componentDidMount(){
@@ -49,7 +53,7 @@ class App extends Component{
     BluetoothModule.initBluetoothStateListener();
     // bluetoothStateListener();
 
-    const eventEmitter = new NativeEventEmitter(BluetoothModule);
+    const eventEmitter = new NativeEventEmitter();
 
     this.eventListener = eventEmitter.addListener('BluetoothState', (event) => {
       console.log(event.state);
@@ -166,6 +170,21 @@ class App extends Component{
     //BluetoothModule.writeFmb(this.state.comando);
   }
 
+  async escanearBT(){
+    this.setState({isLoading: true});
+    this.setState({textoFrase: "Procurando novos dispositivos"});
+    
+    const devices = await BluetoothModule.discovery();
+    this.setState({availableDevices: devices});
+    this.setState({scanReady: true});
+    this.setState({isLoading: false});
+    this.setState({textoFrase: "Busca finalizada"});
+    devices.map((item) => {
+      console.log(item.name);
+    })
+    //console.log(devices[0].address);
+  }
+
   pegaComando(texto){
     this.setState({comando: texto})
   }
@@ -198,8 +217,8 @@ class App extends Component{
               contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', flexDirection: 'column' }}
               style={{ backgroundColor: 'white', paddingBottom: 30, padding: 20 }}
             >
-                          <View>
-            <Text>{this.state.dadosBt}</Text>
+            <View>
+              <Text>{this.state.dadosBt}</Text>
             </View>
               <View>
               <TextInput style={styles.input}
@@ -223,20 +242,57 @@ class App extends Component{
             </ScrollView>
         )}
 
-        {!this.state.isLoading && !this.state.btConnected &&(
+        {!this.state.isLoading && !this.state.btConnected && !this.state.scanReady &&(
           <ScrollView>
-         {this.state.bondedDevices.map((d, idx) => {
-            return (
-            <TouchableOpacity key={idx} style={styles.button_devices} onPress={() => this.connectBt(d)}>
+            <TouchableOpacity style={styles.button_procurar} onPress={() => this.escanearBT()}>
               <View style={styles.btnArea}>
-                <Text style={styles.btnTexto}>{d.name}</Text>
+                <Text style={styles.btnTextoProcurar}>Procurar dispositivos</Text>
               </View>
             </TouchableOpacity>
-            )
-            
-          })}
+
+        
+            <View style={{paddingTop: 20, justifyContent: 'center', alignItems: 'center'}}>
+              <Text style={{fontSize: 18, fontWeight: 'bold'}}>Dispositivos já pareados</Text>
+              {this.state.bondedDevices.map((d, idx) => {
+                  return (
+                  <TouchableOpacity key={idx} style={styles.button_devices} onPress={() => this.connectBt(d)}>
+                    <View style={styles.btnArea}>
+                      <Text style={styles.btnTexto}>{d.name}</Text>
+                    </View>
+                  </TouchableOpacity>
+                  )
+                  
+                })}
+            </View>
           </ScrollView>
           )}
+
+
+        {!this.state.isLoading && this.state.scanReady && !this.state.btConnected &&(
+          <ScrollView>
+            <TouchableOpacity style={styles.button_procurar} onPress={() => this.escanearBT()}>
+              <View style={styles.btnArea}>
+                <Text style={styles.btnTextoProcurar}>Procurar dispositivos</Text>
+              </View>
+            </TouchableOpacity>
+
+            <View style={{paddingTop: 20, justifyContent: 'center', alignItems: 'center'}}>
+              <Text style={{fontSize: 18, fontWeight: 'bold'}}>Dispositivos disponíveis</Text>
+              {this.state.availableDevices.map((d, idx) => {
+                  return (
+                  <TouchableOpacity key={idx} style={styles.button_devices} onPress={() => this.connectBt(d)}>
+                    <View style={styles.btnArea}>
+                      <Text style={styles.btnTexto}>{d.name}</Text>
+                    </View>
+                  </TouchableOpacity>
+                  )
+                  
+                })}
+            </View>
+          </ScrollView>
+          )}
+
+
       </View>
     );
   }
@@ -270,6 +326,17 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 7
   },
+  button_procurar:{
+    width: 230,
+    height: 50,
+    borderWidth: 2,
+    borderColor: '#dd0000',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    marginTop: '2.5%',
+    padding: 10,
+    borderRadius: 7
+  },
   button:{
     width: 150,
     height: 50,
@@ -292,6 +359,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#dd7b22',
+  },
+  btnTextoProcurar:{
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#dd0000',
   },
   input:{
     height:45,

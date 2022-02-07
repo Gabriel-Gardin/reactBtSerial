@@ -69,9 +69,6 @@ public class CommunicationThread extends Thread {
                         "BluetoothState",
                         payload);
 
-                // Log.e(TAG, "Tamanho: %i", bytes);
-                // TODO: Transferir os dados para o JS;
-
             } catch (IOException e) {
                 if (this.mState) {
                     WritableMap payload = Arguments.createMap();
@@ -94,18 +91,10 @@ public class CommunicationThread extends Thread {
     public void write(byte[] buffer) {
         try {
             mmOutStream.write(buffer);
-
-            // Share the sent message back to the UI Activity
-            // mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
-            // .sendToTarget();
         } catch (IOException e) {
             Log.e(TAG, "Exception during write", e);
         }
     }
-
-    // public void stop_communication(){
-    // this.mState = false;
-    // }
 
     public void cancel() {
         this.mState = false;
