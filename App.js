@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import BluetoothModule from './nativeModules/Bluetooth';
 import functions from './functions';
-import Loading from './components/Loading'
+import Loading from './components/Loading';
+import ListDevices from './components/bluetooth';
 
 
 import {
@@ -204,42 +205,40 @@ class App extends Component{
       <View style={styles.container}>
 
         <View style={{justifyContent: 'flex-end'}}>
-        <Text style={styles.textoFrase}>{this.state.textoFrase}</Text>
+          <Text style={styles.textoFrase}>{this.state.textoFrase}</Text>
         </View>
 
         {this.state.isLoading &&  (
-        <Loading></Loading>
+        <Loading />
       )}
 
-
-          {!this.state.isLoading &&  this.state.btConnected && (
-              <ScrollView
-              contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', flexDirection: 'column' }}
-              style={{ backgroundColor: 'white', paddingBottom: 30, padding: 20 }}
-            >
-            <View>
-              <Text>{this.state.dadosBt}</Text>
-            </View>
-              <View>
-              <TextInput style={styles.input}
-              placeholder='Digite o comando'
-              onChangeText={this.pegaComando} />
+      {!this.state.isLoading &&  this.state.btConnected && (
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', flexDirection: 'column' }}
+          style={{ backgroundColor: 'white', paddingBottom: 30, padding: 20 }}>
+          <View>
+            <Text>{this.state.dadosBt}</Text>
+          </View>
+          <View>
+            <TextInput style={styles.input}
+            placeholder='Digite o comando'
+            onChangeText={this.pegaComando} />
           
-              <View style={{flexDirection:"row"}}>
-                <TouchableOpacity style={styles.button} onPress={() => this.sendCommand()}>
-                  <View style={styles.btnArea}>
-                    <Text style={styles.btnTexto}>Enviar</Text>
-                  </View>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.button} onPress={() => this.desconectBt()}>
-                  <View style={styles.btnArea}>
-                    <Text style={styles.btnTexto}>Desconectar</Text>
-                  </View>
-                </TouchableOpacity>
+            <View style={{flexDirection:"row"}}>
+              <TouchableOpacity style={styles.button} onPress={() => this.sendCommand()}>
+                <View style={styles.btnArea}>
+                  <Text style={styles.btnTexto}>Enviar</Text>
                 </View>
-              </View>
-            </ScrollView>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.button} onPress={() => this.desconectBt()}>
+                <View style={styles.btnArea}>
+                  <Text style={styles.btnTexto}>Desconectar</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
         )}
 
         {!this.state.isLoading && !this.state.btConnected && !this.state.scanReady &&(
@@ -253,16 +252,7 @@ class App extends Component{
         
             <View style={{paddingTop: 20, justifyContent: 'center', alignItems: 'center'}}>
               <Text style={{fontSize: 18, fontWeight: 'bold'}}>Dispositivos já pareados</Text>
-              {this.state.bondedDevices.map((d, idx) => {
-                  return (
-                  <TouchableOpacity key={idx} style={styles.button_devices} onPress={() => this.connectBt(d)}>
-                    <View style={styles.btnArea}>
-                      <Text style={styles.btnTexto}>{d.name}</Text>
-                    </View>
-                  </TouchableOpacity>
-                  )
-                  
-                })}
+              <ListDevices devices={this.state.bondedDevices} handleClick={this.connectBt}></ListDevices> 
             </View>
           </ScrollView>
           )}
@@ -278,16 +268,7 @@ class App extends Component{
 
             <View style={{paddingTop: 20, justifyContent: 'center', alignItems: 'center'}}>
               <Text style={{fontSize: 18, fontWeight: 'bold'}}>Dispositivos disponíveis</Text>
-              {this.state.availableDevices.map((d, idx) => {
-                  return (
-                  <TouchableOpacity key={idx} style={styles.button_devices} onPress={() => this.connectBt(d)}>
-                    <View style={styles.btnArea}>
-                      <Text style={styles.btnTexto}>{d.name}</Text>
-                    </View>
-                  </TouchableOpacity>
-                  )
-                  
-                })}
+              <ListDevices devices={this.state.availableDevices} handleClick={this.connectBt} />
             </View>
           </ScrollView>
           )}
@@ -305,26 +286,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  img:{
-    width:250,
-    height: 250
-  },
   textoFrase:{
     fontSize:20,
     color: '#dd7b22',
     margin: 30,
     justifyContent: 'flex-start'
-  },
-  button_devices:{
-    width: 230,
-    height: 50,
-    borderWidth: 2,
-    borderColor: '#dd7b22',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    marginTop: '2.5%',
-    padding: 10,
-    borderRadius: 7
   },
   button_procurar:{
     width: 230,

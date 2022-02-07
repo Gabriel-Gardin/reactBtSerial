@@ -8,10 +8,6 @@
 import { NativeModules } from 'react-native';
 
 const { BluetoothModule } = NativeModules;
-// const {BLUETOOTH_ON} = 0;
-// const {BLUETOOTH_OFF} = 1;
-// const {BLUETOOTH_DISCONNECTED} = 2;
-// const {BLUETOOTH_CONNECTED} = 3;
 
 
 export default BluetoothModule;  
