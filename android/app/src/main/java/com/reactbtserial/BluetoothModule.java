@@ -197,25 +197,15 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
             res[i] = ((byte) message.getDouble(i));
         }
 
-        OutputStream mmOutStream = this.connection.getMmSocket().getOutputStream();
-
-        try {
-            mmOutStream.write(res);
-            promise.resolve(true);
-        } catch (IOException e) {
-            promise.reject("400", "Failed");
-        }
+        this.communication.write(res);
     }
 
     @ReactMethod
     public void writeStringCommand(String message, Promise promise) throws IOException {
+
         OutputStream mmOutStream = this.connection.getMmSocket().getOutputStream();
         String msg = message + "\r\n";
-        try {
-            mmOutStream.write(msg.getBytes());
-        } catch (IOException e) {
-            promise.reject("400", "Failed");
-        }
+        this.communication.write(msg.getBytes());
     }
 
     private boolean checkBluetoothAdapter() {
