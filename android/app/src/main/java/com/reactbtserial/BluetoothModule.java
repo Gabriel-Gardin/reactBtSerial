@@ -162,7 +162,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Thread.currentThread().interrupt();
             }
         }
-        // communication.cancel();
     }
 
     @ReactMethod
@@ -251,7 +250,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                     case BluetoothAdapter.STATE_ON:
                         sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
                         break;
-
                 }
             }
         }
@@ -264,7 +262,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         mDiscoveryReceiver = new Discovery(new Discovery.DiscoveryCallback() {
             @Override
             public void onDeviceDiscovered(NativeDevice device) {
-                // Log.i(TAG, String.format("Encontrou equipamento: %s", device.getName()));
+                // TODO: Renderizar item a item retornando por aqui...
                 return;
             }
 

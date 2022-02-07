@@ -1,27 +1,8 @@
 import React, { Component } from 'react';
 
-import {ActivityIndicator, TouchableOpacity, View, Text} from 'react-native';
+import {TouchableOpacity, View, Text} from 'react-native';
 
 import styles from './styles';
-
-
-class Bluetooth extends Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            textoFrase: 'Selecione seu dispositivo',
-            bondedDevices: [],
-            isLoading: false,
-            btConnected: false,
-            btOn: false,
-            dadosBt: '',
-            availableDevices: [],
-            scanReady: false
-        };
-    }
-}
-
-
 
 class ListDevices extends Component{
     constructor(props)
