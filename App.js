@@ -92,14 +92,12 @@ class App extends Component{
           //Alert.alert("FMB", "CONECTADO");
           break;
 
-        case 5:  //BT Co
-          console.log("Bluetooth Turnin Off");
-          //this.setState({btConnected: true});
+        case 5:  //BT Co(btConnected: true});
           
           //Alert.alert("FMB", "CONECTADO");
           break;
 
-        case 7:  //BT Co
+        case 6:  //BT Co
           console.log("Conexão interrompida");
           this.setState({btConnected: false});
           Alert.alert("Conexão interrompida!");
@@ -109,7 +107,7 @@ class App extends Component{
           //Alert.alert("FMB", "CONECTADO");
           break;
         
-        case 10: //Dados bluetooth
+        case 7: //Dados bluetooth
           console.log("Dados: ", event.dados);
           this.setState({dadosBt: event.dados});
           break;
@@ -203,7 +201,7 @@ class App extends Component{
         <View style={{justifyContent: 'flex-end'}}>
           <Text style={styles.textoFrase}>{this.state.textoFrase}</Text>
         </View>
-
+        import com.reactbtserial.bluetooth.BluetoothStateEnum;
         {this.state.isLoading &&  (
         <Loading />
       )}

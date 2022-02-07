@@ -12,6 +12,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.reactbtserial.bluetooth.BluetoothStateEnum;
+import com.reactbtserial.bluetooth.JSEventManager;
 import com.reactbtserial.bluetooth.ConnectThread;
 import com.reactbtserial.bluetooth.CommunicationThread;
 import com.reactbtserial.bluetooth.Discovery;
@@ -55,10 +56,12 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     private BluetoothState bluetoothStateReciver;
     private BluetoothSocket mmSocket;
     private BroadcastReceiver mDiscoveryReceiver;
+    private JSEventManager mEventManager;
 
     public BluetoothModule(@Nonnull ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
+        this.mEventManager = new JSEventManager(this.reactContext);
     }
 
     @Override
@@ -94,7 +97,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void initBluetoothStateListener() {
-        this.bluetoothStateReciver = new BluetoothState();
+        this.bluetoothStateReciver = new BluetoothState(this.mEventManager);
         IntentFilter bluetoothStateFilter = new IntentFilter();
         bluetoothStateFilter.addAction(this.bluetoothAdapter.ACTION_STATE_CHANGED);
         bluetoothStateFilter.addAction(this.bluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
@@ -197,47 +200,12 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void writeStringCommand(String message, Promise promise) throws IOException {
-
-        OutputStream mmOutStream = this.connection.getMmSocket().getOutputStream();
         String msg = message + "\r\n";
         this.communication.write(msg.getBytes());
     }
 
     private boolean checkBluetoothAdapter() {
         return (this.bluetoothAdapter != null && this.bluetoothAdapter.isEnabled());
-    }
-
-    private class BluetoothState extends BroadcastReceiver {
-
-        public void sendBluetoothState(BluetoothStateEnum state) {
-            ReactContext reactContext = getReactApplicationContext();
-            WritableMap params = Arguments.createMap();
-            params.putInt("state", state.getBluetoothTypeCode());
-            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-                    BLUETOOTH_STATE,
-                    params);
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR);
-
-                switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_OFF);
-                        break;
-
-                    case BluetoothAdapter.STATE_ON:
-                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
-                        break;
-                }
-            }
-        }
     }
 
     @ReactMethod
@@ -274,5 +242,45 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Discovery.intentFilter());
 
         this.bluetoothAdapter.startDiscovery();
+    }
+}
+
+private class BluetoothState extends BroadcastReceiver {
+
+    private JSEventManager mEventManager;
+
+    public BluetoothState(JSEventManager mEventManager) {
+        this.mEventManager = mEventManager;
+    }
+
+    public void sendBluetoothState(BluetoothStateEnum state) {
+        this.mEventManager.sendBluetoothState(state);
+
+        // WritableMap params = Arguments.createMap();
+        // params.putInt("state", state.getBluetoothTypeCode());
+        // this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
+        // BLUETOOTH_STATE,
+        // params);
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        final String action = intent.getAction();
+
+        if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+
+            final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                    BluetoothAdapter.ERROR);
+
+            switch (state) {
+                case BluetoothAdapter.STATE_OFF:
+                    sendBluetoothState(BluetoothStateEnum.BLUETOOTH_OFF);
+                    break;
+
+                case BluetoothAdapter.STATE_ON:
+                    sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
+                    break;
+            }
+        }
     }
 }
