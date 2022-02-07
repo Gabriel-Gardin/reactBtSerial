@@ -1,20 +1,31 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# React Native Bluetooth SPP
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+This is a react native app that shows how to implement a Serial Port Profile(SPP) bluetooth classic profile. The purpose of this project is to serve as an example for those in need to create a Native Module to communicate with bluetooth classic devices. Hoppefuly, it will help someone.
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+## Installation
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+After cloning this repo delete the node_modules folder and rebuild it
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+```bash
+rm -rf node_modules && yarn install
+```
+
+## Usage
+
+To use this example run the two commands above in separate terminals?
+
+```bash
+yarn start
+```
+
+```bash
+yarn android
+```
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
