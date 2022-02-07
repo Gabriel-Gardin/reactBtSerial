@@ -12,14 +12,16 @@ import java.util.Map;
 
 public class NativeDevice {
     private BluetoothDevice mDevice;
-    private Map<String,Object> mExtra;
+    private Map<String, Object> mExtra;
 
     public NativeDevice(BluetoothDevice device) {
         this.mDevice = device;
         this.mExtra = new HashMap<>();
     }
 
-    public BluetoothDevice getDevice() { return mDevice; }
+    public BluetoothDevice getDevice() {
+        return mDevice;
+    }
 
     public String getAddress() {
         return mDevice.getAddress();

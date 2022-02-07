@@ -5,12 +5,7 @@ import java.util.Map;
 
 public enum BluetoothStateEnum {
     BLUETOOTH_ON(1),
-    BLUETOOTH_OFF(0),
-    BLUETOOTH_TURNING_ON(4),
-    BLUETOOTH_TURNING_OFF(5),
-    BLUETOOTH_CONNECTED(3),
-    BLUETOOTH_DISCONNECTED(2);
-    
+    BLUETOOTH_OFF(0);
 
     private int bluetoothTypeCode;
 

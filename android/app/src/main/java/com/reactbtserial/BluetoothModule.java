@@ -12,15 +12,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.reactbtserial.bluetooth.BluetoothStateEnum;
-//import com.driver3sat.bluetooth.Commands;
-//import com.driver3sat.bluetooth.Communication;
 import com.reactbtserial.bluetooth.ConnectThread;
 import com.reactbtserial.bluetooth.CommunicationThread;
 import com.reactbtserial.bluetooth.Discovery;
 import com.reactbtserial.bluetooth.NativeDevice;
-//import com.driver3sat.bluetooth.Pairing;
-import com.reactbtserial.helpers.Events;
-import com.reactbtserial.helpers.EventsEnum;
 import com.facebook.react.BuildConfig;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;

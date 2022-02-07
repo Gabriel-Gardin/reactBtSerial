@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import android.content.Intent;
 import android.util.Log;
 
-import com.reactbtserial.helpers.Events;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -18,9 +17,9 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * This thread runs while attempting to make an outgoing connection
- * with a device. It runs straight through; the connection either
- * succeeds or fails.
+ * Esta thread é executada enquanto tenta se conectar com o
+ * equipamento(BluetoothDevice device)
+ * É executada até o equipamento se conectar e dps retorna.
  */
 
 public class ConnectThread extends Thread {
@@ -68,12 +67,10 @@ public class ConnectThread extends Thread {
         } catch (IOException connectException) {
             try {
                 this.mmSocket.close();
-                new Intent(Events.CONNECTION_CLOSED);
+                // TODO: Notificar comunicação fechada
             } catch (IOException closeException) {
                 Log.e(TAG, "Could not close the client socket", closeException);
-                new Intent(Events.CONNECTION_ERROR);
             }
-            // Notificar que a conexão falhou
             return;
         }
 
@@ -83,7 +80,6 @@ public class ConnectThread extends Thread {
         payload.putInt("state", 3); // CONNECTED;
         this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState",
                 payload);
-        // Inciar thread de conexão...
     }
 
     // Closes the client socket and causes the thread to finish.
@@ -95,8 +91,8 @@ public class ConnectThread extends Thread {
                     payload);
             this.connected = false;
             this.mmSocket.close(); // Bluetooth socket
-        } catch (Exception e) {
-            // Log.e(TAG, "Could not close the client socket", e);
+        } catch (IOException e) {
+            Log.e(TAG, "close() of connect socket failed", e);
         }
     }
 }
