@@ -12,14 +12,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.reactbtserial.bluetooth.BluetoothStateEnum;
-//import com.driver3sat.bluetooth.Commands;
-//import com.driver3sat.bluetooth.Communication;
-import com.reactbtserial.bluetooth.Connection;
-//import com.driver3sat.bluetooth.Discovery;
+import com.reactbtserial.bluetooth.ConnectThread;
+import com.reactbtserial.bluetooth.CommunicationThread;
+import com.reactbtserial.bluetooth.Discovery;
 import com.reactbtserial.bluetooth.NativeDevice;
-//import com.driver3sat.bluetooth.Pairing;
-import com.reactbtserial.helpers.Events;
-import com.reactbtserial.helpers.EventsEnum;
 import com.facebook.react.BuildConfig;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -53,16 +49,15 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     private static final int BT_PERMISSION = 1;
 
     private BluetoothAdapter bluetoothAdapter;
-    private Connection connection;
-    // private Communication communication;
+    private ConnectThread connection;
+    private CommunicationThread communication;
     private ReactContext reactContext;
-    //private DataReceiver dataReceiver;
     private BluetoothState bluetoothStateReciver;
-    // private BroadcastReceiver mDiscoveryReceiver;
+    private BluetoothSocket mmSocket;
+    private BroadcastReceiver mDiscoveryReceiver;
 
     public BluetoothModule(@Nonnull ReactApplicationContext reactContext) {
         super(reactContext);
-
         this.reactContext = reactContext;
     }
 
@@ -91,28 +86,22 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         }
     }
 
-
     /**
-     * Inicializa o 
+     * Inicializa o
+     * 
      * @param x The value to square.
      * @return The square root of the given number.
      */
     @ReactMethod
     public void initBluetoothStateListener() {
         this.bluetoothStateReciver = new BluetoothState();
-
         IntentFilter bluetoothStateFilter = new IntentFilter();
-
         bluetoothStateFilter.addAction(this.bluetoothAdapter.ACTION_STATE_CHANGED);
         bluetoothStateFilter.addAction(this.bluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
 
         getReactApplicationContext().registerReceiver(
                 bluetoothStateReciver,
                 bluetoothStateFilter);
-    }
-
-    public void send(int number) {
-        Log.d(TAG, String.valueOf(number));
     }
 
     @ReactMethod
@@ -135,49 +124,19 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         promise.resolve(bonded);
     }
 
-    /*
-     * @ReactMethod
-     * public void pairDevice(String address, Promise promise) {
-     * if (BuildConfig.DEBUG)
-     * Log.d(TAG, String.format("Attempting to pair with device %s", address));
-     * 
-     * final Pairing pr = new Pairing(getReactApplicationContext(),
-     * new Pairing.PairingCallback() {
-     * 
-     * @Override
-     * public void onPairingSuccess(NativeDevice device) {
-     * promise.resolve(device.map());
-     * }
-     * 
-     * @Override
-     * public void onPairingFailure(Exception cause) {
-     * promise.reject(TAG, cause);
-     * }
-     * });
-     * getReactApplicationContext().registerReceiver(pr, Pairing.intentFilter());
-     * 
-     * try {
-     * BluetoothDevice device = this.bluetoothAdapter.getRemoteDevice(address);
-     * 
-     * Method m = device.getClass().getMethod("createBond", (Class[]) null);
-     * m.invoke(device, (Object[]) null);
-     * } catch (IllegalAccessException | NoSuchMethodException |
-     * InvocationTargetException e) {
-     * Log.d("3SAT", String.valueOf(e));
-     * }
-     * }
-     */
     @ReactMethod
     public void connect(String address) throws IOException {
 
         BluetoothDevice device = this.bluetoothAdapter.getRemoteDevice(address);
         NativeDevice nativeDevice = new NativeDevice(device);
-
-        Connection connection = new Connection(
+        ConnectThread connection = new ConnectThread(
                 device,
                 this.bluetoothAdapter,
                 this.reactContext);
-        connection.start();
+
+        connection.run(); // Inicia a thread de conexão
+
+        Log.e(TAG, "Communication iniciada");
 
         int i = 0;
         while (i < 15) {
@@ -186,6 +145,11 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Thread.currentThread().sleep(200); // Pause a thread por 200ms
                 if (connection.connected) {
                     this.connection = connection;
+                    this.mmSocket = this.connection.getMmSocket();
+                    CommunicationThread communication = new CommunicationThread(this.mmSocket,
+                            this.reactContext);
+                    communication.start(); // Inicia a threa que recebe dados pelo socket bluetooth.
+                    this.communication = communication;
                     // promise.resolve(true);
                     return;
                 }
@@ -193,25 +157,18 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Thread.currentThread().interrupt();
             }
         }
-        // promise.resolve(false);*/
     }
 
     @ReactMethod
     public void close_bt_connection() {
         if (this.connection.connected == true) {
-            
-            //this.connection.thread_running = false;
-            this.connection.stop_thread();
+            this.communication.cancel();
             try {
-                Thread.currentThread().sleep(1000); // Pause a thread por 200ms
-                this.connection.cancel();
+                Thread.currentThread().sleep(200); // Pause a thread por 200ms
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
             }
-            //this.connection.interrupt();
-            //this.connection.interrupt();
-            //this.connection.cancel();
-            //this.connection.stop();
+            this.connection.cancel();
         }
     }
 
@@ -225,86 +182,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         }
     }
 
-
-    // @ReactMethod
-    // public void addListener(String eventName, Promise promise) throws IOException {
-    //     try {unblockFilterFilter();
-
-    //         unblockFilter.addAction(Events.UNBLOCK_COMMAND_NOT_EXECUTED);
-    //         unblockFilter.addAction(Events.UNBLOCK_COMMAND_EXECUTED);
-    //         unblockFilter.addAction(Events.CONNECTION_ERROR);
-    //         unblockFilter.addAction(Events.IGNITION_ON);
-    //         unblockFilter.addAction(Events.IGNITION_OFF);
-    //         unblockFilter.addAction(Events.COMMAND_NOT_SENT);
-    //         unblockFilter.addAction(Events.COMMAND_SENT);
-    //         unblockFilter.addAction(Events.CONNECTION_CLOSED);
-
-    //         getReactApplicationContext().registerReceiver(
-    //                 this.dataReceiver,
-    //                 unblockFilter);
-
-    //         promise.resolve(true);
-    //     } catch (Exception ex) {
-    //         promise.resolve(false);
-    //     }
-    // }
-
-    // @ReactMethod
-    // public void removeListener() throws IOException {
-    //     try {
-    //         if (this.dataReceiver != null) {
-    //             getReactApplicationContext().unregisterReceiver(this.dataReceiver);
-    //             this.dataReceiver = null;
-    //         }
-    //     } catch (Exception ex) {
-    //     }
-    // }
-
-    /*
-     * @ReactMethod
-     * public void writeMxt(ReadableMap info, int command, Promise promise) {
-     * String serialNumber = info.getString("serialNumber");
-     * String driverId = info.getString("driverId");
-     * Boolean driverAppWithWarningSound =
-     * info.getBoolean("driverAppWithWarningSound");
-     * 
-     * Commands commands = new Commands();
-     * 
-     * byte[] commandToWrite;
-     * 
-     * switch (command) {
-     * case 2:
-     * commandToWrite = commands.sendReleaseCommand(
-     * driverAppWithWarningSound,
-     * serialNumber
-     * );
-     * 
-     * break;
-     * case 3:
-     * commandToWrite = commands.sendDriverIdCommand(
-     * serialNumber,
-     * driverId
-     * );
-     * 
-     * break;
-     * case 1:
-     * commandToWrite = commands.sendRequestVariablesCommand(
-     * serialNumber
-     * );
-     * 
-     * break;
-     * default:
-     * throw new IllegalStateException("Unexpected value: " + command);
-     * }
-     * 
-     * boolean sent = this.communication.write(commandToWrite);
-     * 
-     * Log.d(TAG, String.valueOf(sent));
-     * 
-     * promise.resolve(sent);
-     * }
-     */
-
     @ReactMethod
     public void writeFmb(ReadableArray message, Promise promise) throws IOException {
 
@@ -315,87 +192,15 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
             res[i] = ((byte) message.getDouble(i));
         }
 
-        OutputStream mmOutStream = this.connection.getMmSocket().getOutputStream();
-
-        try {
-            mmOutStream.write(res);
-            promise.resolve(true);
-        } catch (IOException e) {
-            promise.reject("400", "Failed");
-        }
+        this.communication.write(res);
     }
 
-    /*
-     * @ReactMethod
-     * public void startCommunication(Promise promise) {
-     * BluetoothSocket socket = this.connection.getMmSocket();
-     * 
-     * Communication bluetoothService = new Communication(socket,
-     * this.reactContext);
-     * 
-     * bluetoothService.start();
-     * 
-     * this.communication = bluetoothService;
-     * 
-     * promise.resolve(true);
-     * }
-     */
+    @ReactMethod
+    public void writeStringCommand(String message, Promise promise) throws IOException {
 
-    /*
-     * @ReactMethod
-     * public void discovery(final Promise promise) {
-     * mDiscoveryReceiver = new Discovery(new Discovery.DiscoveryCallback() {
-     * 
-     * @Override
-     * public void onDeviceDiscovered(NativeDevice device) {
-     * return;
-     * }
-     * 
-     * @Override
-     * public void onDiscoveryFinished(Collection<NativeDevice> devices) {
-     * WritableArray array = Arguments.createArray();
-     * for (NativeDevice device : devices) {
-     * array.pushMap(device.map());
-     * }
-     * 
-     * promise.resolve(array);
-     * mDiscoveryReceiver = null;
-     * }
-     * 
-     * @Override
-     * public void onDiscoveryFailed(Throwable e) {
-     * mDiscoveryReceiver = null;
-     * }
-     * });
-     * 
-     * getReactApplicationContext().registerReceiver(mDiscoveryReceiver,
-     * Discovery.intentFilter());
-     * 
-     * this.bluetoothAdapter.startDiscovery();
-     * }
-     * 
-     * @ReactMethod
-     * public void endCommunication() {
-     * this.communication.cancel();
-     * }
-     */
-
-    // public void sendEvent(WritableMap data) {
-    //     ReactContext reactContext = getReactApplicationContext();
-
-    //     reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-    //             DATA_RECEIVE_EVENT,
-    //             data);
-    // }
-
-    public void sendBluetoothState(BluetoothStateEnum state) {
-
-        ReactContext reactContext = getReactApplicationContext();
-        WritableMap params = Arguments.createMap();
-        params.putInt("state", state.getBluetoothTypeCode());
-        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-                BLUETOOTH_STATE,
-                params);
+        OutputStream mmOutStream = this.connection.getMmSocket().getOutputStream();
+        String msg = message + "\r\n";
+        this.communication.write(msg.getBytes());
     }
 
     private boolean checkBluetoothAdapter() {
@@ -403,6 +208,16 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     }
 
     private class BluetoothState extends BroadcastReceiver {
+
+        public void sendBluetoothState(BluetoothStateEnum state) {
+            ReactContext reactContext = getReactApplicationContext();
+            WritableMap params = Arguments.createMap();
+            params.putInt("state", state.getBluetoothTypeCode());
+            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
+                    BLUETOOTH_STATE,
+                    params);
+        }
+
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
@@ -416,70 +231,48 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                     case BluetoothAdapter.STATE_OFF:
                         sendBluetoothState(BluetoothStateEnum.BLUETOOTH_OFF);
                         break;
-                    // case BluetoothAdapter.STATE_TURNING_OFF:
-                    //     sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
-                    //     break;
+
                     case BluetoothAdapter.STATE_ON:
                         sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
                         break;
-
-                    case BluetoothAdapter.STATE_CONNECTED:
-                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
-                        break;
-
-                    case BluetoothAdapter.STATE_DISCONNECTED:
-                        sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_OFF);
-                        break;
-                    // case BluetoothAdapter.STATE_TURNING_ON:
-                    //     sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
-                    //     break;
                 }
             }
-            
-            // if(action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CONNECTED)){
-            //     sendBluetoothState(BluetoothStateEnum.BLUETOOTH_TURNING_ON);
-            // }
         }
     }
 
-    // private final class DataReceiver extends BroadcastReceiver {
+    @ReactMethod
+    public void discovery(final Promise promise) {
+        Log.i(TAG, "Iniciando discovery");
 
-    //     @Override
-    //     public void onReceive(Context context, Intent intent) {
-    //         String action = intent.getAction();
+        mDiscoveryReceiver = new Discovery(new Discovery.DiscoveryCallback() {
+            @Override
+            public void onDeviceDiscovered(NativeDevice device) {
+                // TODO: Renderizar item a item retornando por aqui...
+                return;
+            }
 
-    //         WritableMap params = Arguments.createMap();
+            @Override
+            public void onDiscoveryFinished(Collection<NativeDevice> devices) {
+                Log.i(TAG, "Acabou o discovery!!");
+                WritableArray array = Arguments.createArray();
+                for (NativeDevice device : devices) {
+                    array.pushMap(device.map());
+                    Log.i(TAG, String.format("Encontrou equipamento: %s", device.getName()));
+                }
 
-    //         switch (action) {
-    //             case Events.UNBLOCK_COMMAND_EXECUTED:
-    //                 params.putInt("event", EventsEnum.UNBLOCK_COMMAND_EXECUTED.getEventsCode());
-    //                 break;
-    //             case Events.UNBLOCK_COMMAND_NOT_EXECUTED:
-    //                 params.putInt("event",
-    //                         EventsEnum.UNBLOCK_COMMAND_NOT_EXECUTED.getEventsCode());
-    //                 break;
-    //             case Events.CONNECTION_CLOSED:
-    //                 params.putInt("event", EventsEnum.CONNECTION_CLOSED.getEventsCode());
-    //                 break;
-    //             case Events.CONNECTION_ERROR:
-    //                 params.putInt("event", EventsEnum.CONNECTION_ERROR.getEventsCode());
-    //                 break;
-    //             case Events.IGNITION_ON:
-    //                 params.putInt("event", EventsEnum.IGNITION_ON.getEventsCode());
-    //                 break;
-    //             case Events.IGNITION_OFF:
-    //                 params.putInt("event", EventsEnum.IGNITION_OFF.getEventsCode());
-    //                 break;
-    //             case Events.COMMAND_SENT:
-    //                 params.putInt("event", EventsEnum.COMMAND_SENT.getEventsCode());
-    //                 break;
-    //             case Events.COMMAND_NOT_SENT:
-    //                 params.putInt("event", EventsEnum.COMMAND_NOT_SENT.getEventsCode());
-    //                 break;
-    //         }
+                promise.resolve(array);
+                mDiscoveryReceiver = null;
+            }
 
-    //         sendEvent(params);
-    //     }
-    // }
+            @Override
+            public void onDiscoveryFailed(Throwable e) {
+                mDiscoveryReceiver = null;
+            }
+        });
 
+        getReactApplicationContext().registerReceiver(mDiscoveryReceiver,
+                Discovery.intentFilter());
+
+        this.bluetoothAdapter.startDiscovery();
+    }
 }

@@ -38,9 +38,6 @@ public class Discovery extends BroadcastReceiver {
                 mCallback.onDeviceDiscovered(found);
             }
         } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-            Log.d(this.getClass().getSimpleName(),
-                    String.format("Discovery found %d device(s)", unpairedDevices.size()));
-
             mCallback.onDiscoveryFinished(unpairedDevices.values());
             context.unregisterReceiver(this);
         }

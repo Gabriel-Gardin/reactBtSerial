@@ -1,22 +1,19 @@
-#Wed Feb 02 17:30:50 BRT 2022
+#Mon Feb 07 16:15:45 BRT 2022
 path.1=0/classes.dex
 path.0=classes.dex
-renamed.6=classes7.dex
 renamed.5=classes6.dex
 renamed.4=classes5.dex
 renamed.3=classes4.dex
 renamed.2=classes3.dex
 renamed.1=classes2.dex
 renamed.0=classes.dex
-base.6=/home/sat/Documents/dev/reactBtSerial/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/3/classes.dex
 base.5=/home/sat/Documents/dev/reactBtSerial/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/14/classes.dex
-base.4=/home/sat/Documents/dev/reactBtSerial/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex
+base.4=/home/sat/Documents/dev/reactBtSerial/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/3/classes.dex
 base.3=/home/sat/Documents/dev/reactBtSerial/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/10/classes.dex
 base.2=/home/sat/Documents/dev/reactBtSerial/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
 base.1=/home/sat/Documents/dev/reactBtSerial/android/app/build/intermediates/dex/debug/mergeLibDexDebug/0/classes.dex
 base.0=/home/sat/Documents/dev/reactBtSerial/android/app/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
-path.6=3/classes.dex
 path.5=14/classes.dex
-path.4=12/classes.dex
+path.4=3/classes.dex
 path.3=10/classes.dex
 path.2=0/classes.dex
