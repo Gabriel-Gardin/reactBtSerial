@@ -3,7 +3,8 @@ import BluetoothModule from './nativeModules/Bluetooth';
 import functions from './functions';
 import Loading from './components/Loading';
 import ListDevices from './components/bluetooth';
-import styles from './styles'
+import styles from './styles';
+
 
 
 import {
@@ -15,6 +16,7 @@ import {
   TouchableOpacity,
   Alert,
   NativeEventEmitter,
+  ToastAndroid,
   } from 'react-native';
 
 class App extends Component{
@@ -46,11 +48,7 @@ class App extends Component{
     const allow_bt = await BluetoothModule.checkIfDeviceSupportBT();
 
     if (!allow_bt) {
-      Toast.show({
-      type: 'error',
-      text1: 'BLUETOOTH',
-      text2: 'Dispositivo oferece suporte para bluetooth',
-      });
+      ToastAndroid.show("Dispositivo não oferece suporte para bluetooth", ToastAndroid.LONG);
     }
 
     BluetoothModule.askToEnableBluetooth();
@@ -77,27 +75,26 @@ class App extends Component{
     console.log(event.state);
     switch (event.state) {
       case 0:  //BT off
-        console.log("Bluetooth desligado");
         this.setState({btOn: false});
         break;
 
       case 1: //BT ON
-        console.log("Bluetooth ligado");
+        this.setState({btOn: true});
         break;
 
       case 2:  //BT Desconectado
         console.log("Bluetooth desconectado");
+        ToastAndroid.show("Conexão finalizada", ToastAndroid.SHORT);
         this.setState({btConnected: false});
         break;
 
       case 3:  //BT Conectado
-        console.log("Bluetooth conectado");
+        ToastAndroid.show("Conectado", ToastAndroid.SHORT);
         this.setState({btConnected: true});
         this.setState({textoFrase: "Digite seu comando"});
         break;
 
       case 4:  //BT Conexão caiu
-        console.log("Conexão interrompida");
         this.setState({btConnected: false});
         Alert.alert("Conexão interrompida!");
         this.setState({textoFrase: "Selecione um dispositivo..."});
@@ -122,12 +119,7 @@ class App extends Component{
       const granted = await functions.askPermissions();
     
       if (!granted) {
-        Toast.show({
-          type: 'info',
-          text1: 'Bluetooth',
-          text2:
-            'Para encontrarmos os dispositivos próximos precisamos do acesso a sua localização.',
-        });
+        ToastAndroid.show("Para conectar aos dispositivos precisamos de acesso a sua localização", ToastAndroid.LONG);
       }
     
       BluetoothModule.connect(btDevice.address);
