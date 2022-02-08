@@ -53,7 +53,6 @@ class App extends Component{
 
     BluetoothModule.askToEnableBluetooth();
     BluetoothModule.initBluetoothStateListener();
-    // bluetoothStateListener();
 
     const eventEmitter = new NativeEventEmitter();
 
@@ -85,29 +84,15 @@ class App extends Component{
           //Alert.alert("FMB", "CONECTADO");
           break;
 
-        case 4:  //BT Conectado
-          console.log("Bluetooth Turning On");
-          //this.setState({btConnected: true});
-          
-          //Alert.alert("FMB", "CONECTADO");
-          break;
-
-        case 5:  //BT Co(btConnected: true});
-          
-          //Alert.alert("FMB", "CONECTADO");
-          break;
-
-        case 6:  //BT Co
+        case 4:  //BT Conexão caiu
           console.log("Conexão interrompida");
           this.setState({btConnected: false});
           Alert.alert("Conexão interrompida!");
           this.setState({textoFrase: "Selecione um dispositivo..."});
           //BluetoothModule.close_bt_connection();
-          
-          //Alert.alert("FMB", "CONECTADO");
           break;
         
-        case 7: //Dados bluetooth
+        case 5: //Dados bluetooth
           console.log("Dados: ", event.dados);
           this.setState({dadosBt: event.dados});
           break;
@@ -201,7 +186,6 @@ class App extends Component{
         <View style={{justifyContent: 'flex-end'}}>
           <Text style={styles.textoFrase}>{this.state.textoFrase}</Text>
         </View>
-        import com.reactbtserial.bluetooth.BluetoothStateEnum;
         {this.state.isLoading &&  (
         <Loading />
       )}

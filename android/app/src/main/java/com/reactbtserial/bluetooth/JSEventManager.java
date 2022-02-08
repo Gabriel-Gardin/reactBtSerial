@@ -1,4 +1,4 @@
-package com.reactbtserial;
+package com.reactbtserial.bluetooth;
 
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.Arguments;
@@ -17,7 +17,7 @@ public class JSEventManager {
 
     public void sendBluetoothState(BluetoothStateEnum state) {
         WritableMap params = Arguments.createMap();
-        params.putInt("state", 1); // state.getBluetoothTypeCode());
+        params.putInt("state", state.getBluetoothTypeCode());
         this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
                 "BluetoothState",
                 params);
@@ -31,5 +31,4 @@ public class JSEventManager {
                 "BluetoothState",
                 payload);
     }
-
 }

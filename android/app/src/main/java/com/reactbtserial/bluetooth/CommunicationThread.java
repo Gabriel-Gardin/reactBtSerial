@@ -1,17 +1,17 @@
 package com.reactbtserial.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
+import com.reactbtserial.bluetooth.BluetoothStateEnum;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import java.io.InputStream;
 import java.io.OutputStream;
 import android.content.Intent;
 import android.util.Log;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.Arguments;
+import com.reactbtserial.bluetooth.JSEventManager;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,15 +25,15 @@ public class CommunicationThread extends Thread {
     private final BluetoothSocket mmSocket;
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
-    private final ReactContext reactContext;
+    private JSEventManager mEventManager;
     private boolean mState;
 
-    public CommunicationThread(BluetoothSocket socket, ReactContext reactContext) {
+    public CommunicationThread(BluetoothSocket socket, JSEventManager mEventManager) {
         mmSocket = socket;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
         this.mState = true;
-        this.reactContext = reactContext;
+        this.mEventManager = mEventManager;
 
         // Get the BluetoothSocket input and output streams
         try {
@@ -59,23 +59,12 @@ public class CommunicationThread extends Thread {
                 Arrays.fill(buffer, (byte) 0);
                 bytes = mmInStream.read(buffer); // Le os dados que chegam
 
-                // Log.i(TAG, String.format("Dados: %s", Arrays.toString(buffer)));
-                // Log.i(TAG, String.format("Tamando: %d", bytes));
-
-                WritableMap payload = Arguments.createMap();
-                payload.putInt("state", 10); // Dados bluetooth;
-                payload.putString("dados", Arrays.toString(buffer));
-                this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-                        "BluetoothState",
-                        payload);
+                byte[] data = Arrays.copyOf(buffer, bytes);
+                this.mEventManager.sendBluetoothData(data);
 
             } catch (IOException e) {
                 if (this.mState) {
-                    WritableMap payload = Arguments.createMap();
-                    payload.putInt("state", 7); // Conexão perdida;
-                    this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-                            "BluetoothState",
-                            payload);
+                    this.mEventManager.sendBluetoothState(BluetoothStateEnum.BLUETOOTH_INTERUPTED);
                 }
                 Log.e(TAG, "Conexão bluetooth caiu!!", e);
                 break;

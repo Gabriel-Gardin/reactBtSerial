@@ -8,10 +8,8 @@ public enum BluetoothStateEnum {
     BLUETOOTH_ON(1),
     BLUETOOTH_DESCONECTADO(2),
     BLUETOOTH_CONECTADO(3),
-    BLUETOOTH_TURNING_ON(4),
-    BLUETOOTH_TURNING_OFF(5),
-    BLUETOOTH_INTERUPTED(6),
-    BLUETOOTH_DATA(7);
+    BLUETOOTH_INTERUPTED(4),
+    BLUETOOTH_DATA(5);
 
     private int bluetoothTypeCode;
 

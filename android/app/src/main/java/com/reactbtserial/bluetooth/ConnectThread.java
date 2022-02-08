@@ -10,8 +10,9 @@ import android.util.Log;
 
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.reactbtserial.bluetooth.BluetoothStateEnum;
+import com.reactbtserial.bluetooth.JSEventManager;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -28,17 +29,16 @@ public class ConnectThread extends Thread {
     private BluetoothSocket mmSocket;
     private BluetoothDevice mmDevice;
     private final BluetoothAdapter bluetoothAdapter;
-    private final ReactContext reactContext;
+    private JSEventManager mEventManager;
 
     public boolean connected = false;
 
     public ConnectThread(
             BluetoothDevice device,
-            BluetoothAdapter bluetoothAdapter,
-            ReactContext reactContext) {
+            BluetoothAdapter bluetoothAdapter, JSEventManager mEventManager) {
 
         this.mmDevice = device;
-        this.reactContext = reactContext;
+        this.mEventManager = mEventManager;
         BluetoothSocket tmp = null;
 
         try {
@@ -47,7 +47,6 @@ public class ConnectThread extends Thread {
             Log.e(TAG, "Socket's create() method failed", e);
         }
         this.mmSocket = tmp; // Abriu o socket
-        // TODO: Notificar que o processo de conexão começou
         this.bluetoothAdapter = bluetoothAdapter;
     }
 
@@ -67,7 +66,6 @@ public class ConnectThread extends Thread {
         } catch (IOException connectException) {
             try {
                 this.mmSocket.close();
-                // TODO: Notificar comunicação fechada
             } catch (IOException closeException) {
                 Log.e(TAG, "Could not close the client socket", closeException);
             }
@@ -75,20 +73,13 @@ public class ConnectThread extends Thread {
         }
 
         this.connected = true;
-
-        WritableMap payload = Arguments.createMap();
-        payload.putInt("state", 3); // CONNECTED;
-        this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState",
-                payload);
+        this.mEventManager.sendBluetoothState(BluetoothStateEnum.BLUETOOTH_CONECTADO);
     }
 
-    // Closes the client socket and causes the thread to finish.
+    // Fecha a conexão e faz com que a thread termine
     public void cancel() {
         try {
-            WritableMap payload = Arguments.createMap();
-            payload.putInt("state", 2); // DISCONNECTED;
-            this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("BluetoothState",
-                    payload);
+            this.mEventManager.sendBluetoothState(BluetoothStateEnum.BLUETOOTH_DESCONECTADO);
             this.connected = false;
             this.mmSocket.close(); // Bluetooth socket
         } catch (IOException e) {

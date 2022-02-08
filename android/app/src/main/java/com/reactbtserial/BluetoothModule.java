@@ -3,42 +3,31 @@ package com.reactbtserial;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
-import com.reactbtserial.bluetooth.BluetoothStateEnum;
+import com.reactbtserial.bluetooth.BluetoothState;
 import com.reactbtserial.bluetooth.JSEventManager;
 import com.reactbtserial.bluetooth.ConnectThread;
 import com.reactbtserial.bluetooth.CommunicationThread;
 import com.reactbtserial.bluetooth.Discovery;
 import com.reactbtserial.bluetooth.NativeDevice;
-import com.facebook.react.BuildConfig;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
-
-import android.util.Log;
 
 import javax.annotation.Nonnull;
 
@@ -135,7 +124,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         ConnectThread connection = new ConnectThread(
                 device,
                 this.bluetoothAdapter,
-                this.reactContext);
+                this.mEventManager);
 
         connection.run(); // Inicia a thread de conexão
 
@@ -145,12 +134,11 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         while (i < 15) {
             i++;
             try {
-                Thread.currentThread().sleep(200); // Pause a thread por 200ms
+                Thread.currentThread().sleep(200); // Pausa a thread por 200ms
                 if (connection.connected) {
                     this.connection = connection;
                     this.mmSocket = this.connection.getMmSocket();
-                    CommunicationThread communication = new CommunicationThread(this.mmSocket,
-                            this.reactContext);
+                    CommunicationThread communication = new CommunicationThread(this.mmSocket, this.mEventManager);
                     communication.start(); // Inicia a threa que recebe dados pelo socket bluetooth.
                     this.communication = communication;
                     // promise.resolve(true);
@@ -242,45 +230,5 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                 Discovery.intentFilter());
 
         this.bluetoothAdapter.startDiscovery();
-    }
-}
-
-private class BluetoothState extends BroadcastReceiver {
-
-    private JSEventManager mEventManager;
-
-    public BluetoothState(JSEventManager mEventManager) {
-        this.mEventManager = mEventManager;
-    }
-
-    public void sendBluetoothState(BluetoothStateEnum state) {
-        this.mEventManager.sendBluetoothState(state);
-
-        // WritableMap params = Arguments.createMap();
-        // params.putInt("state", state.getBluetoothTypeCode());
-        // this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(
-        // BLUETOOTH_STATE,
-        // params);
-    }
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        final String action = intent.getAction();
-
-        if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-
-            final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                    BluetoothAdapter.ERROR);
-
-            switch (state) {
-                case BluetoothAdapter.STATE_OFF:
-                    sendBluetoothState(BluetoothStateEnum.BLUETOOTH_OFF);
-                    break;
-
-                case BluetoothAdapter.STATE_ON:
-                    sendBluetoothState(BluetoothStateEnum.BLUETOOTH_ON);
-                    break;
-            }
-        }
     }
 }
