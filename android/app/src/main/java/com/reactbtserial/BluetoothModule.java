@@ -31,6 +31,16 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+/*
+* Esta classe representa o módulo nativo para ser consumido pela aplicação em react native. 
+* Aqui expomos uma API para todas as ferramentas necessárias para:
+* - Escanear novos dispositivos bluetooth;
+* - Parear e conectar em novos dispositivos;
+* - Conectar em dispositivos já pareados;
+* - Notifica a aplicação caso a conexão caia;
+* - Transmite os dados recebidos pelo equipamento bluetooth através da classe JSEventManager
+* - Fechar as conexões em aberto.
+*/
 public class BluetoothModule extends ReactContextBaseJavaModule {
     private static final String TAG = "3SAT";
     private static final String DATA_RECEIVE_EVENT = "DataReviced";
@@ -79,17 +89,15 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     }
 
     /**
-     * Inicializa o
-     * 
-     * @param x The value to square.
-     * @return The square root of the given number.
+     * Inicializa o bluetooth state listener
+     * Este modulo é responsável por transmitir eventos de bluetooth como bluetooth
+     * ligado/desligado para a nossa aplicação.
      */
     @ReactMethod
     public void initBluetoothStateListener() {
         this.bluetoothStateReciver = new BluetoothState(this.mEventManager);
         IntentFilter bluetoothStateFilter = new IntentFilter();
         bluetoothStateFilter.addAction(this.bluetoothAdapter.ACTION_STATE_CHANGED);
-        bluetoothStateFilter.addAction(this.bluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
 
         getReactApplicationContext().registerReceiver(
                 bluetoothStateReciver,
@@ -101,6 +109,9 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         promise.resolve(this.checkBluetoothAdapter());
     }
 
+    /**
+     * Retorna uma lista de dispositivos já pareados
+     */
     @ReactMethod
     public void getBondedDevices(Promise promise) {
         Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
@@ -116,6 +127,12 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         promise.resolve(bonded);
     }
 
+    /**
+     * Conecta a um dispositivo a partir de seu adress
+     * Esta função utiliza a classe ConnecThread para inicializar a conexão e a
+     * classe CommunicationThread que fica o tempo todo monitorando o estado da
+     * conexão e recebendo dados.
+     */
     @ReactMethod
     public void connect(String address) throws IOException {
 
@@ -141,7 +158,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
                     CommunicationThread communication = new CommunicationThread(this.mmSocket, this.mEventManager);
                     communication.start(); // Inicia a threa que recebe dados pelo socket bluetooth.
                     this.communication = communication;
-                    // promise.resolve(true);
                     return;
                 }
             } catch (Exception e) {
@@ -150,6 +166,10 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         }
     }
 
+    /**
+     * Fecha uma conexão ativa com um dispositivo.
+     * Termina a thread de communicação e a thread de conexão.
+     */
     @ReactMethod
     public void close_bt_connection() {
         if (this.connection.connected == true) {
@@ -163,6 +183,9 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         }
     }
 
+    /*
+     * Retorna o estado atual da conexão.
+     */
     @ReactMethod
     public void get_bt_status(Promise promise) {
         if (this.connection == null) {
@@ -173,6 +196,9 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         }
     }
 
+    /*
+     * Envia comandos em binário para o dispositivo conectado.
+     */
     @ReactMethod
     public void writeFmb(ReadableArray message, Promise promise) throws IOException {
 
@@ -196,6 +222,10 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
         return (this.bluetoothAdapter != null && this.bluetoothAdapter.isEnabled());
     }
 
+    /*
+     * Inicializa o processo de discovery de equipamentos bluetooth e retorna uma
+     * lista dos dispositivos disponíveis.
+     */
     @ReactMethod
     public void discovery(final Promise promise) {
         Log.i(TAG, "Iniciando discovery");

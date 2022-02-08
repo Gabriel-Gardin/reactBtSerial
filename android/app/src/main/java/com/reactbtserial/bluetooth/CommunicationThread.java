@@ -17,8 +17,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * This thread runs during a connection with a remote device.
- * It handles all incoming and outgoing transmissions.
+ * Esta thread é executada em paralelo a aplicação e é responśavel por monitorar
+ * eventos de desconexão pelo lado do equipamento
+ * E também por receber dados transmitidos por ele.
  */
 public class CommunicationThread extends Thread {
     private static final String TAG = "CommunicationThread";
@@ -35,7 +36,7 @@ public class CommunicationThread extends Thread {
         this.mState = true;
         this.mEventManager = mEventManager;
 
-        // Get the BluetoothSocket input and output streams
+        // Pega os sockets de comunicação INput e output
         try {
             tmpIn = socket.getInputStream();
             tmpOut = socket.getOutputStream();
@@ -52,7 +53,7 @@ public class CommunicationThread extends Thread {
         byte[] buffer = new byte[64];
         int bytes;
 
-        // Keep listening to the InputStream while connected
+        // Ouve o tempo todo por dados chegando pelo socket de input.
         while (this.mState) {
             try {
                 // Read from the InputStream
@@ -73,9 +74,9 @@ public class CommunicationThread extends Thread {
     }
 
     /**
-     * Write to the connected OutStream.
+     * Envia dados de volta para o dispositivo conectado.
      *
-     * @param buffer The bytes to write
+     * @param buffer Bytes que se deseja transmitir
      */
     public void write(byte[] buffer) {
         try {

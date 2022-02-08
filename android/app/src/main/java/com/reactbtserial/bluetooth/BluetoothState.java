@@ -7,6 +7,9 @@ import com.reactbtserial.bluetooth.JSEventManager;
 import android.content.Intent;
 import android.content.Context;
 
+/*Esta classe inicializa um BroadcastReceiver, que é responsável por transmitir o estado da interface bluetooth
+Por aqui notificamos se o bluetooth está ligado ou desligado.
+*/
 public class BluetoothState extends BroadcastReceiver {
 
     private JSEventManager mEventManager;

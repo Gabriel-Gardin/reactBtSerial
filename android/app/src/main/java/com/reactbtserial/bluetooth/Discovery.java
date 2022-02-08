@@ -12,6 +12,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+* Esta classe é responsável pro prover uma interface para realizar o discovery de novos dispositivos ainda não pareados.
+* Assim como a classe BroadcastReceiver ela herda da classe BroadcastReceiver para receber dados do android.
+*/
 public class Discovery extends BroadcastReceiver {
 
     private DiscoveryCallback mCallback;

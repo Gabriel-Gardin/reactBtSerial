@@ -7,6 +7,10 @@ import java.util.Arrays;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
+/*
+Esta classe é responsável por centralizar todos os meios de comunicação entre o módulo nativo bluetooth e a aplicação react native
+Através desta classe enviamos notificações sobre o estado da conexão, estado do bluetooth e os dados recebidos.
+*/
 public class JSEventManager {
 
     private final ReactContext reactContext;

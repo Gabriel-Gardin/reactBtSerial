@@ -4,6 +4,9 @@ import {TouchableOpacity, View, Text} from 'react-native';
 
 import styles from './styles';
 
+/*
+* Componente utilizado para renderizar uma lista de dispositivos BT.
+*/
 class ListDevices extends Component{
     constructor(props)
     {

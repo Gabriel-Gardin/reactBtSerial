@@ -3,6 +3,10 @@ package com.reactbtserial.bluetooth;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/*
+Enum de utilitário para representar as opções de transmissão para o app react-native. 
+Esta enum é utilizado muito em conjunto com o JSEventManager.
+*/
 public enum BluetoothStateEnum {
     BLUETOOTH_OFF(0),
     BLUETOOTH_ON(1),

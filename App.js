@@ -19,7 +19,8 @@ import {
 
 class App extends Component{
 
-  constructor(props){
+  constructor(props)
+  {
     super(props);
     this.state = {
       textoFrase: 'Selecione seu dispositivo',
@@ -39,7 +40,8 @@ class App extends Component{
     this.escanearBT = this.escanearBT.bind(this);
   }
 
-  async componentDidMount(){
+  async componentDidMount()
+  {
     //let a = await BluetoothModule.teste();
     const allow_bt = await BluetoothModule.checkIfDeviceSupportBT();
 
@@ -56,45 +58,8 @@ class App extends Component{
 
     const eventEmitter = new NativeEventEmitter();
 
-    this.eventListener = eventEmitter.addListener('BluetoothState', (event) => {
-      console.log(event.state);
-      switch (event.state) {
-        case 0:  //BT off
-          console.log("Bluetooth desligado");
-          this.setState({btOn: false});
-          break;
+    this.eventListener = eventEmitter.addListener('BluetoothState', (event) => this.processEvents(event));
 
-        case 1: //BT ON
-          console.log("Bluetooth ligado");
-          break;
-
-        case 2:  //BT Desconectado
-          console.log("Bluetooth desconectado");
-          this.setState({btConnected: false});
-          break;
-
-        case 3:  //BT Conectado
-          console.log("Bluetooth conectado");
-          this.setState({btConnected: true});
-          this.setState({textoFrase: "Digite seu comando"});
-          break;
-
-        case 4:  //BT Conexão caiu
-          console.log("Conexão interrompida");
-          this.setState({btConnected: false});
-          Alert.alert("Conexão interrompida!");
-          this.setState({textoFrase: "Selecione um dispositivo..."});
-          break;
-        
-        case 5: //Dados bluetooth
-          console.log("Dados: ", event.dados);
-          this.setState({dadosBt: event.dados});
-          break;
-
-        default:
-          break;
-      }
-    });
 
     const bondedDevices = await BluetoothModule.getBondedDevices();
     this.setState({bondedDevices: bondedDevices});
@@ -102,11 +67,54 @@ class App extends Component{
     this.setState({btOn: await BluetoothModule.isBluetoothEnabled()});
   }
   
-   componentWillUnmount(){
-     this.eventListener.remove(); //Removes the listener
-   }
+  componentWillUnmount()
+  {
+    this.eventListener.remove(); //Removes the listener
+  }
 
-  async connectBt(btDevice){
+  processEvents(event)
+  {
+    console.log(event.state);
+    switch (event.state) {
+      case 0:  //BT off
+        console.log("Bluetooth desligado");
+        this.setState({btOn: false});
+        break;
+
+      case 1: //BT ON
+        console.log("Bluetooth ligado");
+        break;
+
+      case 2:  //BT Desconectado
+        console.log("Bluetooth desconectado");
+        this.setState({btConnected: false});
+        break;
+
+      case 3:  //BT Conectado
+        console.log("Bluetooth conectado");
+        this.setState({btConnected: true});
+        this.setState({textoFrase: "Digite seu comando"});
+        break;
+
+      case 4:  //BT Conexão caiu
+        console.log("Conexão interrompida");
+        this.setState({btConnected: false});
+        Alert.alert("Conexão interrompida!");
+        this.setState({textoFrase: "Selecione um dispositivo..."});
+        break;
+      
+      case 5: //Dados bluetooth
+        console.log("Dados: ", event.dados);
+        this.setState({dadosBt: event.dados});
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  async connectBt(btDevice)
+  {
     if(this.state.btOn)
     {
       this.setState({textoFrase: "Conectando..."});
@@ -135,7 +143,8 @@ class App extends Component{
     }
   }
 
-  sendCommand(){
+  sendCommand()
+  {
     //Alert.alert("Enviando comando");
     //const command = [0x46, 0x4D, 0x42, 0x58, 0x00, 0x00, 0x00, 0x01, 0x00, 0x2e, 0x00, 0x02, 0x00, 0x01, 0xc6, 0x98, 0x0d, 0x0a];
     //BluetoothModule.writeFmb(command);
@@ -146,7 +155,8 @@ class App extends Component{
     //BluetoothModule.writeFmb(this.state.comando);
   }
 
-  async escanearBT(){
+  async escanearBT()
+  {
     this.setState({isLoading: true});
     this.setState({textoFrase: "Procurando novos dispositivos"});
     
@@ -157,11 +167,13 @@ class App extends Component{
     this.setState({textoFrase: "Busca finalizada"});
   }
 
-  pegaComando(texto){
+  pegaComando(texto)
+  {
     this.setState({comando: texto})
   }
 
-  async desconectBt(){
+  async desconectBt()
+  {
     if(await BluetoothModule.get_bt_status()){
       await BluetoothModule.close_bt_connection();
     }
@@ -171,7 +183,8 @@ class App extends Component{
   }
 
 
-  render(){
+  render()
+  {
     return(
       <View style={styles.container}>
 

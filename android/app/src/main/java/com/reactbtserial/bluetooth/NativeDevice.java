@@ -10,6 +10,9 @@ import com.facebook.react.bridge.WritableMap;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+Esta classe traz uma representação dos dispositivos bluetooth.
+*/
 public class NativeDevice {
     private BluetoothDevice mDevice;
     private Map<String, Object> mExtra;

@@ -22,7 +22,6 @@ import java.util.UUID;
  * equipamento(BluetoothDevice device)
  * É executada até o equipamento se conectar e dps retorna.
  */
-
 public class ConnectThread extends Thread {
     private static final String TAG = "ConnectThreadModule";
     private final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -59,7 +58,7 @@ public class ConnectThread extends Thread {
     }
 
     public void run() {
-        this.bluetoothAdapter.cancelDiscovery();
+        this.bluetoothAdapter.cancelDiscovery(); // Antes de se conectar sempre devemos cancelar o discovery. Precaução.
 
         try {
             this.mmSocket.connect();
