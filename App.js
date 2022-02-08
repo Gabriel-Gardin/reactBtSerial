@@ -61,27 +61,22 @@ class App extends Component{
       switch (event.state) {
         case 0:  //BT off
           console.log("Bluetooth desligado");
-          //setBluetoothEnabled(false);
           this.setState({btOn: false});
           break;
 
         case 1: //BT ON
-          //setBluetoothEnabled(true);
           console.log("Bluetooth ligado");
           break;
 
         case 2:  //BT Desconectado
           console.log("Bluetooth desconectado");
           this.setState({btConnected: false});
-          //Alert.alert("FMB", "DESCONECTADO");
           break;
 
         case 3:  //BT Conectado
           console.log("Bluetooth conectado");
           this.setState({btConnected: true});
           this.setState({textoFrase: "Digite seu comando"});
-          
-          //Alert.alert("FMB", "CONECTADO");
           break;
 
         case 4:  //BT Conexão caiu
@@ -89,7 +84,6 @@ class App extends Component{
           this.setState({btConnected: false});
           Alert.alert("Conexão interrompida!");
           this.setState({textoFrase: "Selecione um dispositivo..."});
-          //BluetoothModule.close_bt_connection();
           break;
         
         case 5: //Dados bluetooth
@@ -100,7 +94,6 @@ class App extends Component{
         default:
           break;
       }
-       //console.log(event.state) // "someValue"
     });
 
     const bondedDevices = await BluetoothModule.getBondedDevices();
@@ -132,7 +125,6 @@ class App extends Component{
       BluetoothModule.connect(btDevice.address);
       this.setState({isLoading: false});
       if(!this.state.btConnected){
-        //Alert.alert("Não foi possível conectar")
         this.setState({textoFrase: "Selecione um dispositivo..."});
       }
     }
